@@ -1,0 +1,30 @@
+<!-- design UI with JavaFX -->
+<dependencies>
+    <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-controls</artifactId>
+        <version>21</version> </dependency>
+    <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-fxml</artifactId>
+        <version>21</version>
+    </dependency>
+    <dependency>
+        <groupId>org.kordamp.ikonli</groupId>
+        <artifactId>ikonli-javafx-package</artifactId>
+        <version>12.3.1</version>
+    </dependency>
+</dependencies>
+
+<!-- To run the application using the command 'mvn javafx:run' -->
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-maven-plugin</artifactId>
+            <version>0.0.8</version>
+            <configuration>
+                <mainClass>com.example.App</mainClass> </configuration>
+        </plugin>
+    </plugins>
+</build>
