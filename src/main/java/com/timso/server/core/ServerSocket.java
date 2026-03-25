@@ -1,4 +1,4 @@
-package main.java.com.timso.server.core;
+package com.timso.server.core;
 
 public class ServerSocket {
     public ServerSocket() {

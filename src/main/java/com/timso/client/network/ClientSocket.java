@@ -1,4 +1,4 @@
-package main.java.com.timso.client.network;
+package com.timso.client.network;
 
 public class ClientSocket {
     public ClientSocket() {

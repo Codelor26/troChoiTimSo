@@ -1,4 +1,4 @@
-package main.java.com.timso.server.dao;
+package com.timso.server.dao;
 
 public class StatsDAO {
     public StatsDAO() {

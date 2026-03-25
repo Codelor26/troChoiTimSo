@@ -1,4 +1,4 @@
-package main.java.com.timso.server.config;
+package com.timso.server.config;
 
 public class ServerConfig {
     public ServerConfig() {
