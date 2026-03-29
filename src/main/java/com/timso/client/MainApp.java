@@ -11,9 +11,8 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // System.out.println("Chương trình trò chơi bắt đầu.");
-        LoginView loginView = new LoginView();
-        Scene scene = new Scene(loginView.getRoot(), 500, 500);
-        primaryStage.setTitle("Codelor");
+        
+        Scene scene = new Scene(new LoginView(), 1280, 620);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
