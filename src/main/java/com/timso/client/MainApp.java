@@ -10,8 +10,6 @@ public class MainApp extends Application {
     // phai extends Application de chay duoc JavaFX
     @Override
     public void start(Stage primaryStage) {
-        // System.out.println("Chương trình trò chơi bắt đầu.");
-        
         Scene scene = new Scene(new LoginView(), 1280, 620);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -21,3 +19,5 @@ public class MainApp extends Application {
         launch(args);
     }
 }
+
+// client - 2

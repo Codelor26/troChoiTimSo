@@ -17,19 +17,23 @@ import javafx.scene.layout.VBox;
 
 import java.util.Objects;
 
+import com.timso.common.model.User;
+import com.timso.server.dao.UserDAO;
+
 public class ProfileDialog extends StackPane {
 
     private final ImageView previewImage = new ImageView();
     private final TextField txtPlayerName = new TextField();
-    private InstructionView instructionView ;
+    private InstructionView instructionView;
     private final Label lblError = new Label("");
     private String selectedAvatarPath;
+    private User currentUser;
 
-    public ProfileDialog() {
+    public ProfileDialog(User user) {
+        this.currentUser = user;
         getStyleClass().add("auth-root");
         getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
-        );
+                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm());
         StackPane content = buildContent();
         instructionView = new InstructionView(this::hideInstructionView, this::openHomeView);
 
@@ -128,8 +132,7 @@ public class ProfileDialog extends StackPane {
 
     private Image loadImage(String path) {
         return new Image(
-                Objects.requireNonNull(getClass().getResource(path)).toExternalForm()
-        );
+                Objects.requireNonNull(getClass().getResource(path)).toExternalForm());
     }
 
     private void handleStart() {
@@ -153,10 +156,16 @@ public class ProfileDialog extends StackPane {
         }
 
         clearError();
-        showInstructionView(); 
+        showInstructionView();
     }
+
     private void showInstructionView() {
         instructionView.showOverlay();
+        UserDAO dao = new UserDAO();
+        dao.updateProfile(
+                txtPlayerName.getText().trim(),
+                selectedAvatarPath,
+                currentUser.getUserName());
     }
 
     private void hideInstructionView() {
@@ -167,8 +176,7 @@ public class ProfileDialog extends StackPane {
         if (getScene() != null) {
             getScene().setRoot(new HomeView(
                     txtPlayerName.getText().trim(),
-                    selectedAvatarPath
-            ));
+                    selectedAvatarPath));
         }
     }
 

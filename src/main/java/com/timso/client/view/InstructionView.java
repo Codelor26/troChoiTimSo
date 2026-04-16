@@ -1,4 +1,5 @@
 package com.timso.client.view;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -6,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
 public class InstructionView extends StackPane {
 
     public InstructionView(Runnable onCloseAction, Runnable onStartAction) {
@@ -15,8 +17,10 @@ public class InstructionView extends StackPane {
 
         VBox panel = new VBox(18);
         panel.getStyleClass().add("rules-panel");
-        panel.setAlignment(Pos.TOP_CENTER);
-        panel.setMaxWidth(760);
+        // panel.setAlignment(Pos.TOP_CENTER);
+        panel.setAlignment(Pos.CENTER);
+        panel.setMaxWidth(600);
+        panel.setMaxHeight(450);
 
         Label title = new Label("Luật chơi");
         title.getStyleClass().add("rules-title");
@@ -85,4 +89,5 @@ public class InstructionView extends StackPane {
         setVisible(false);
         setManaged(false);
     }
+
 }

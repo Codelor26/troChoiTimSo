@@ -1,8 +1,10 @@
+// client - 3
 package com.timso.client.view;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
@@ -21,22 +23,29 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import com.timso.common.model.User;
+import com.timso.server.dao.*;
+
 public class LoginView extends StackPane {
-    private static final String DEMO_USERNAME = "admin@gmai.com";
-private static final String DEMO_PASSWORD = "Admin@123";
 
     private static final Pattern FULLNAME_PATTERN = Pattern.compile("^[\\p{L}\\s]+$");
-    private static final Pattern GMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@gmail\\.com$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern STRONG_PASSWORD_PATTERN =
-            Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{8,}$");
+    private static final Pattern GMAIL_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z0-9._%+-]*@gmail\\.com$",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern STRONG_PASSWORD_PATTERN = Pattern
+            .compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{8,}$");
 
     private final StackPane loginPage;
     private final StackPane registerPage;
@@ -64,11 +73,14 @@ private static final String DEMO_PASSWORD = "Admin@123";
     private final Button btnBack = new Button("Back");
     private final Button btnCreate = new Button("Create");
 
+    private InstructionView instructionView;
+
     public LoginView() {
         getStyleClass().add("auth-root");
-        getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
-        );
+
+        getStylesheets().addAll(
+                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm());
+        // Objects.requireNonNull(getClass().getResource("/css/reset-dialog.css")).toExternalForm());
 
         configureDatePicker();
 
@@ -91,19 +103,14 @@ private static final String DEMO_PASSWORD = "Admin@123";
         btnOpenRegister.setOnAction(e -> showRegisterPage());
         btnBack.setOnAction(e -> showLoginPage());
 
-        txtUsername.textProperty().addListener((obs, oldVal, newVal) ->
-                clearFieldError(txtUsername, lblUsernameError));
-        txtPassword.textProperty().addListener((obs, oldVal, newVal) ->
-                clearFieldError(txtPassword, lblPasswordError));
+        txtUsername.textProperty().addListener((obs, oldVal, newVal) -> clearFieldError(txtUsername, lblUsernameError));
+        txtPassword.textProperty().addListener((obs, oldVal, newVal) -> clearFieldError(txtPassword, lblPasswordError));
 
-        txtFullName.textProperty().addListener((obs, oldVal, newVal) ->
-                clearFieldError(txtFullName, lblFullNameError));
-        dpBirthDay.valueProperty().addListener((obs, oldVal, newVal) ->
-                clearFieldError(dpBirthDay, lblBirthDayError));
-        txtEmail.textProperty().addListener((obs, oldVal, newVal) ->
-                clearFieldError(txtEmail, lblEmailError));
-        txtRegisterPassword.textProperty().addListener((obs, oldVal, newVal) ->
-                clearFieldError(txtRegisterPassword, lblRegisterPasswordError));
+        txtFullName.textProperty().addListener((obs, oldVal, newVal) -> clearFieldError(txtFullName, lblFullNameError));
+        dpBirthDay.valueProperty().addListener((obs, oldVal, newVal) -> clearFieldError(dpBirthDay, lblBirthDayError));
+        txtEmail.textProperty().addListener((obs, oldVal, newVal) -> clearFieldError(txtEmail, lblEmailError));
+        txtRegisterPassword.textProperty()
+                .addListener((obs, oldVal, newVal) -> clearFieldError(txtRegisterPassword, lblRegisterPasswordError));
     }
 
     private void configureDatePicker() {
@@ -159,7 +166,11 @@ private static final String DEMO_PASSWORD = "Admin@123";
         brandBox.getChildren().addAll(createBrandIcon(), slogan);
 
         VBox card = new VBox(12);
-        card.setAlignment(Pos.TOP_CENTER);
+        // card.setAlignment(Pos.TOP_CENTER);
+        card.setAlignment(Pos.CENTER);
+        card.setMaxHeight(350);
+        card.setMaxWidth(350);
+        card.setSpacing(10);
         card.getStyleClass().addAll("form-card", "login-card");
 
         Label title = new Label("LOGIN");
@@ -175,13 +186,29 @@ private static final String DEMO_PASSWORD = "Admin@123";
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
+        HBox header = new HBox();
+        Label label = new Label("Password");
+        label.getStyleClass().add("form-label");
+
+        Button forgotBtn = new Button("Forgot Password?");
+        forgotBtn.getStyleClass().add("link-button");
+        forgotBtn.setOnAction(e -> openResetDialog());
+
+        Region spacerHeader = new Region();
+        HBox.setHgrow(spacerHeader, Priority.ALWAYS);
+
+        header.getChildren().addAll(label, spacerHeader, forgotBtn);
+
+        VBox passwordBox = new VBox(4, header, txtPassword, lblPasswordError);
+        passwordBox.getStyleClass().add("field-group");
+        txtPassword.getStyleClass().add("input-field");
+
         card.getChildren().addAll(
                 title,
                 createFieldBox("Username", txtUsername, lblUsernameError),
-                createFieldBox("Password", txtPassword, lblPasswordError),
+                passwordBox,
                 spacer,
-                buttonRow
-        );
+                buttonRow);
 
         wrapper.getChildren().addAll(brandBox, card);
         return wrapper;
@@ -227,6 +254,8 @@ private static final String DEMO_PASSWORD = "Admin@123";
 
         grid.add(createFieldBox("Fullname", txtFullName, lblFullNameError), 0, 0);
         grid.add(createFieldBox("Birth day", dpBirthDay, lblBirthDayError), 1, 0);
+        // GridPane.setHgrow(dpBirthDay, Priority.ALWAYS);
+        // dpBirthDay.setMaxWidth(Double.MAX_VALUE);
         grid.add(createFieldBox("Email", txtEmail, lblEmailError), 0, 1);
         grid.add(createFieldBox("Password", txtRegisterPassword, lblRegisterPasswordError), 1, 1);
         grid.add(genderRow, 0, 2);
@@ -243,6 +272,7 @@ private static final String DEMO_PASSWORD = "Admin@123";
         label.getStyleClass().add("form-label");
 
         input.getStyleClass().add("input-field");
+        input.setMaxWidth(Double.MAX_VALUE);
 
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
@@ -254,8 +284,8 @@ private static final String DEMO_PASSWORD = "Admin@123";
 
     private ImageView createBrandIcon() {
         String iconPath = Objects.requireNonNull(
-                getClass().getResource("/icon/Custom-Icon-Design-Pretty-Office-9-Magnifying-glass.256.png")
-        ).toExternalForm();
+                getClass().getResource("/icon/Custom-Icon-Design-Pretty-Office-9-Magnifying-glass.256.png"))
+                .toExternalForm();
 
         Image icon = new Image(iconPath);
         ImageView iconView = new ImageView(icon);
@@ -278,30 +308,32 @@ private static final String DEMO_PASSWORD = "Admin@123";
         if (username.isEmpty()) {
             showFieldError(txtUsername, lblUsernameError, "Please enter username");
             return;
-        }
-
-        if (password.isEmpty()) {
+        } else if (password.isEmpty()) {
             showFieldError(txtPassword, lblPasswordError, "Please enter password");
             return;
+        } else {
+            UserDAO userDao = new UserDAO();
+            User user = userDao.login(username, password);
+            if (user != null) {
+                System.out.println("Login successful! Welcome, " + user.getFullName());
+                handleAfterLogin(user);
+            } else {
+                showFieldError(txtPassword, lblPasswordError, "Invalid username or password");
+                return;
+            }
         }
-         if (!username.equals(DEMO_USERNAME)) {
-        showFieldError(txtUsername, lblUsernameError, "Username is incorrect");
-        return;
-    }
-
-    if (!password.equals(DEMO_PASSWORD)) {
-        showFieldError(txtPassword, lblPasswordError, "Password is incorrect");
-        return;
-    }
-
-    openProfileSetupPage();
         // System.out.println("Bat dau dang nhap...");
     }
-    private void openProfileSetupPage() {
-    if (getScene() != null) {
-        getScene().setRoot(new ProfileDialog());
+
+    private void handleAfterLogin(User user) {
+        if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
+            getScene().setRoot(new ProfileDialog(user)); // truyền user
+        } else {
+            getScene().setRoot(new HomeView(
+                    user.getPlayerName(),
+                    user.getAvatar()));
+        }
     }
-}
 
     private void validateRegisterForm() {
         clearFieldError(txtFullName, lblFullNameError);
@@ -340,7 +372,7 @@ private static final String DEMO_PASSWORD = "Admin@123";
         }
 
         if (!GMAIL_PATTERN.matcher(email).matches()) {
-            showFieldError(txtEmail, lblEmailError, "Email must end with @gmail.com");
+            showFieldError(txtEmail, lblEmailError, "Email must end with @gmail.com && start with letter");
             return;
         }
 
@@ -353,12 +385,159 @@ private static final String DEMO_PASSWORD = "Admin@123";
             showFieldError(
                     txtRegisterPassword,
                     lblRegisterPasswordError,
-                    "Min 8 chars, include letter, number, special char"
-            );
+                    "Min 8 chars, include letter, number, special char");
             return;
         }
 
-        System.out.println("Bat dau dang ky...");
+        System.out.println("Bat dau dang ky tài khoản...");
+        User newUser = new User();
+        newUser.setUsername(email);
+        newUser.setPassword(password);
+        newUser.setFullname(fullName);
+        newUser.setGender(rbMale.isSelected() ? "Male" : "Female");
+        newUser.setDob(java.sql.Date.valueOf(birthDay));
+
+        UserDAO userDao = new UserDAO();
+        if (userDao.checkEmailExists(email)) {
+            showFieldError(txtEmail, lblEmailError, "Email already exists");
+            return;
+        }
+        if (userDao.register(newUser)) {
+            System.out.println("Registration successful! You can now log in.");
+            showSuccessDialog();
+            showLoginPage();
+        } else {
+            showFieldError(txtEmail, lblEmailError, "Registration failed. Try a different email.");
+
+        }
+    }
+
+    private void openResetDialog() {
+        Stage stage = new Stage();
+        stage.setTitle("Reset Password");
+
+        VBox root = new VBox();
+        root.getStyleClass().add("reset-popup-container");
+        root.setPrefWidth(320);
+
+        Label titleLabel = new Label("Secure Password Reset");
+        titleLabel.getStyleClass().add("reset-header-text");
+
+        TextField txtEmail = new TextField();
+        txtEmail.setPromptText("Enter your account email");
+        txtEmail.getStyleClass().add("reset-input-field");
+
+        PasswordField txtNewPass = new PasswordField();
+        txtNewPass.setPromptText("New password");
+        txtNewPass.getStyleClass().add("reset-input-field");
+
+        PasswordField txtConfirm = new PasswordField();
+        txtConfirm.setPromptText("Confirm new password");
+        txtConfirm.getStyleClass().add("reset-input-field");
+
+        Label lblError = new Label();
+        lblError.getStyleClass().add("reset-error-message");
+
+        Button btnReset = new Button("UPDATE PASSWORD");
+        btnReset.getStyleClass().add("reset-submit-button");
+        btnReset.setMaxWidth(Double.MAX_VALUE);
+
+        btnReset.setOnAction(e -> {
+            String email = txtEmail.getText().trim();
+            String pass = txtNewPass.getText().trim();
+            String confirm = txtConfirm.getText().trim();
+            UserDAO dao = new UserDAO();
+
+            if (email.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
+                lblError.setText("Error: All fields are required.");
+                return;
+            }
+            if (!dao.checkEmailExists(email)) {
+                lblError.setText("Error: This email is not registered.");
+                return;
+            }
+            if (!pass.equals(confirm)) {
+                lblError.setText("Error: Passwords do not match.");
+                return;
+            }
+
+            if (!STRONG_PASSWORD_PATTERN.matcher(pass).matches()) {
+                lblError.setText("Password must be at least 8 chars, include letter, number, special char");
+                return;
+            }
+
+            dao.updatePassword(email, pass);
+            showSuccess("Success! Your password has been changed.");
+            stage.close();
+        });
+
+        root.getChildren().addAll(
+                titleLabel,
+                new Label("Registered Email"), txtEmail,
+                new Label("New Password"), txtNewPass,
+                new Label("Confirm Password"), txtConfirm,
+                lblError,
+                btnReset);
+
+        Scene scene = new Scene(root);
+        try {
+            String cssPath = getClass().getResource("/css/reset-dialog.css").toExternalForm();
+            scene.getStylesheets().add(cssPath);
+        } catch (NullPointerException e) {
+            System.out.println("CSS file not found! Check your resources folder.");
+        }
+
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void showError(String msg) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+
+    private void showSuccess(String msg) {
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setTitle("Success");
+
+        VBox root = new VBox();
+        root.getStyleClass().add("success-container");
+        root.setPrefWidth(280);
+
+        Label icon = new Label("✓");
+        icon.getStyleClass().add("success-icon");
+
+        Label message = new Label(msg);
+        message.getStyleClass().add("success-text");
+        message.setWrapText(true);
+
+        Button btnClose = new Button("OK");
+        btnClose.getStyleClass().add("success-button");
+        btnClose.setPrefWidth(80);
+        btnClose.setOnAction(e -> stage.close());
+
+        root.getChildren().addAll(icon, message, btnClose);
+
+        Scene scene = new Scene(root);
+        try {
+            scene.getStylesheets().add(getClass().getResource("/css/reset-dialog.css").toExternalForm());
+        } catch (Exception e) {
+            System.out.println("Không load được CSS cho Success Dialog");
+        }
+
+        stage.setScene(scene);
+        stage.showAndWait();
+    }
+
+    private void showSuccessDialog() {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setHeaderText(null);
+        alert.setContentText("Registration successful! You can now log in.");
+        alert.showAndWait();
     }
 
     private String safeTrim(String value) {

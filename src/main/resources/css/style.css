@@ -1,3 +1,11 @@
+.link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #4A90E2;
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
 .auth-root {
     -fx-background-color: #1a1a1a;
     -fx-padding: 0;
@@ -57,14 +65,9 @@
     -fx-spacing: 7;
 }
 
-.form-label {
-    -fx-font-family: "Consolas";
-    -fx-font-size: 15px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #161616;
-}
 
-.input-field {
+.input-field,
+.field-groups {
     -fx-pref-height: 38px;
     -fx-pref-width: 350px;
     -fx-background-color: #cfcfcf;
@@ -83,6 +86,7 @@
     -fx-border-width: 1.2;
     -fx-background-color: #d8d8d8;
 }
+
 .error-label {
     -fx-font-family: "Consolas";
     -fx-font-size: 13px;
@@ -99,12 +103,13 @@
     -fx-border-radius: 14;
     -fx-background-radius: 14;
 }
+
 .date-picker.input-field {
     -fx-pref-height: 52px;
     -fx-pref-width: 350px;
 }
 
-.date-picker.input-field > .text-field {
+.date-picker.input-field>.text-field {
     -fx-pref-height: 52px;
     -fx-background-color: #cfcfcf;
     -fx-background-radius: 14 0 0 14;
@@ -116,23 +121,23 @@
     -fx-prompt-text-fill: #6c6c6c;
 }
 
-.date-picker.input-field > .arrow-button {
+.date-picker.input-field>.arrow-button {
     -fx-background-color: #cfcfcf;
     -fx-background-radius: 0 14 14 0;
     -fx-border-color: transparent;
 }
 
-.date-picker.input-field > .arrow-button .arrow {
+.date-picker.input-field>.arrow-button .arrow {
     -fx-background-color: #555555;
 }
 
-.date-picker.input-field.input-error > .text-field {
+.date-picker.input-field.input-error>.text-field {
     -fx-border-color: #d94b4b transparent #d94b4b #d94b4b;
     -fx-border-width: 2px;
     -fx-border-radius: 14 0 0 14;
 }
 
-.date-picker.input-field.input-error > .arrow-button {
+.date-picker.input-field.input-error>.arrow-button {
     -fx-border-color: #d94b4b #d94b4b #d94b4b transparent;
     -fx-border-width: 2px;
     -fx-border-radius: 0 14 14 0;
@@ -219,6 +224,7 @@
     -fx-font-size: 40px;
     -fx-font-weight: 900;
 }
+
 /* profile */
 .profile-card {
     -fx-background-color: #e7e6be;
@@ -282,6 +288,7 @@
     -fx-font-weight: 700;
     -fx-text-fill: #d94b4b;
 }
+
 /* HomeView */
 .home-root {
     -fx-background-color: #e8ec68;
@@ -348,6 +355,7 @@
     -fx-padding: 0;
     -fx-cursor: hand;
 }
+
 .overlay-pane {
     -fx-background-color: rgba(0, 0, 0, 0.15);
     -fx-alignment: center;
@@ -450,6 +458,7 @@
 .logout-button:hover {
     -fx-background-color: #cc9f9f;
 }
+
 /*GameView */
 .game-root {
     -fx-background-color: #e8ec68;
@@ -505,12 +514,14 @@
     -fx-font-size: 20px;
     -fx-font-weight: 700;
     -fx-text-fill: #111111;
-    -fx-cursor:hand;
+    -fx-cursor: hand;
 }
-.board-number:hover{
-    -fx-scale-x:1.08;
-    -fx-scale-y:1.08;
+
+.board-number:hover {
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
 }
+
 .board-number-correct {
     -fx-font-family: "Consolas";
     -fx-font-size: 22px;
@@ -537,12 +548,15 @@
     -fx-text-fill: #111111;
     -fx-cursor: hand;
 }
+
 .game-back-button:hover {
     -fx-background-color: #bfbfbf;
 }
+
 .my-player-mark {
     -fx-opacity: 0.95;
 }
+
 .board-number-highlight {
     -fx-font-family: "Consolas";
     -fx-font-size: 28px;
@@ -552,6 +566,7 @@
     -fx-background-radius: 999;
     -fx-padding: 4 8 4 8;
 }
+
 /* InstructionView */
 .rules-overlay {
     -fx-background-color: rgba(0, 0, 0, 0.15);
@@ -604,6 +619,7 @@
 .rules-start-button {
     -fx-pref-width: 160px;
 }
+
 /*Skill */
 .skill-root {
     -fx-background-color: #e8ec68;
@@ -710,6 +726,7 @@
 .skill-back-button:hover {
     -fx-background-color: #bfbfbf;
 }
+
 .reward-overlay {
     -fx-background-color: rgba(0, 0, 0, 0.55);
     -fx-alignment: center;
@@ -731,6 +748,7 @@
     -fx-font-weight: 700;
     -fx-text-fill: #111111;
 }
+
 /* Setting */
 .setting-root {
     -fx-background-color: #e8ec68;
@@ -812,8 +830,8 @@
 .setting-avatar-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-background-radius:8;
-    -fx-border-radius:8;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
     -fx-padding: 2;
     -fx-cursor: hand;
 }
@@ -856,6 +874,7 @@
     -fx-font-weight: 700;
     -fx-text-fill: #d94b4b;
 }
+
 .setting-scroll-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -863,7 +882,7 @@
     -fx-padding: 10;
 }
 
-.setting-scroll-pane > .viewport {
+.setting-scroll-pane>.viewport {
     -fx-background-color: transparent;
 }
 
@@ -880,4 +899,42 @@
 .setting-scroll-pane .decrement-button {
     -fx-background-color: transparent;
     -fx-padding: 0;
+}
+
+/*fix register birthday  */
+.date-picker {
+    /* -fx-background-color: #f0f0f0; */
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 0;
+}
+
+.date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 10;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.date-picker:focused {
+    -fx-border-color: #3498db;
+}
+
+.date-picker {
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+}
+
+.date-picker .text-field {
+    -fx-pref-height: 38px;
+    -fx-background-insets: 0;
+    -fx-padding: 0 10 0 10;
+}
+
+.date-picker .arrow-button {
+    -fx-pref-height: 38px;
+    -fx-background-insets: 0;
 }

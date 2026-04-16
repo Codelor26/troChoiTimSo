@@ -38,25 +38,40 @@
             <version>21</version>
         </dependency>
 
-    <dependency>
-        <groupId>org.kordamp.ikonli</groupId>
-        <artifactId>ikonli-javafx</artifactId>
-        <version>12.3.1</version>
-    </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.3.1</version>
+        </dependency>
 
-    <dependency>
-        <groupId>org.kordamp.ikonli</groupId>
-        <artifactId>ikonli-fontawesome5-pack</artifactId>
-        <version>12.3.1</version>
-    </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-fontawesome5-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <version>8.3.0</version>
         </dependency>
+        <!-- Password hashing -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
+        <!-- @Data annotation -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+
+
     </dependencies>
-
-
+    
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
@@ -66,8 +81,11 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass> com.timso.client.MainApp</mainClass> 
+                    <!-- <mainClass> com.timso.client.view.test.TestInstructionView</mainClass>  -->
                 </configuration>
             </plugin>
         </plugins>
     </build>
 </project>
+
+<!-- client-1 -->
