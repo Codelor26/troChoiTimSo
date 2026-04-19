@@ -1,0 +1,73 @@
+/* /+css of function openResetDialog */
+.reset-popup-container {
+    -fx-padding: 25;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-spacing: 12;
+}
+
+.reset-header-text {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #34495e;
+}
+
+.reset-input-field {
+    -fx-background-color: #f9f9f9;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 8;
+}
+
+.reset-input-field:focused {
+    -fx-border-color: #3498db;
+    -fx-background-color: #ffffff;
+}
+
+.reset-submit-button {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.reset-submit-button:hover {
+    -fx-background-color: #2ecc71;
+}
+
+.reset-error-message {
+    -fx-text-fill: #c0392b;
+    -fx-font-size: 11px;
+}
+
+/* css of showSuccess */
+.success-container {
+    -fx-padding: 20;
+    -fx-background-color: white;
+    -fx-alignment: center;
+    -fx-spacing: 15;
+    -fx-background-radius: 10;
+}
+
+.success-icon {
+    -fx-font-size: 40px;
+    -fx-text-fill: #27ae60;
+    -fx-font-weight: bold;
+}
+
+.success-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+    -fx-text-alignment: center;
+}
+
+.success-button {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-padding: 8 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
