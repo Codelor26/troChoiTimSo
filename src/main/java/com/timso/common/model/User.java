@@ -1,6 +1,7 @@
 package com.timso.common.model;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import lombok.Data;
 
 @Data // tu dong tao get/set/tostring/equals/hashcode
@@ -14,6 +15,7 @@ public class User {
     private int gold;
     private String avatar;
     private String player_name;
+    private Timestamp last_name_change;
 
     public User() {
     }
@@ -53,6 +55,9 @@ public class User {
     public String getPlayerName() {
         return player_name;
     }
+    public Timestamp getLastNameChange() {
+        return last_name_change;
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -88,5 +93,8 @@ public class User {
 
     public void setPlayerName(String player_name) {
         this.player_name = player_name;
+    }
+    public void setLastNameChange(Timestamp last_name_change) {
+        this.last_name_change = last_name_change;
     }
 }

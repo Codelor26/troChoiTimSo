@@ -20,22 +20,30 @@ public class HomeView extends StackPane {
 
     private final String playerName;
     private final String avatarPath;
+    private final String username;
+    private final java.sql.Timestamp lastNameChange;
     private InstructionView instructionView;
 
     private StackPane overlayPane;
     private VBox playerInfoPanel;
 
     public HomeView(String playerName, String avatarPath) {
-        this.playerName = playerName;
-        this.avatarPath = avatarPath;
+    this(playerName, avatarPath, null, null);
+}
 
-        getStyleClass().add("auth-root");
-        getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
-        );
+public HomeView(String playerName, String avatarPath, String username, java.sql.Timestamp lastNameChange) {
+    this.playerName = playerName;
+    this.avatarPath = avatarPath;
+    this.username = username;
+    this.lastNameChange = lastNameChange;
 
-        getChildren().add(buildContent());
-    }
+    getStyleClass().add("auth-root");
+    getStylesheets().add(
+            Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
+    );
+
+    getChildren().add(buildContent());
+}
 
     private Node buildContent() {
         StackPane root = new StackPane();
@@ -89,7 +97,8 @@ public class HomeView extends StackPane {
 
         playerBox.getChildren().addAll(btnAvatar, lblName);
 
-        Label lblTitle = new Label("FIND NUMBER GAME");
+        Label lblTitle = new Label();
+        lblTitle.textProperty().bind(I18n.bind("home_title"));
         lblTitle.getStyleClass().add("home-title");
 
         HBox coinBox = new HBox(10);
@@ -119,7 +128,8 @@ public class HomeView extends StackPane {
     center.setAlignment(Pos.CENTER);
     center.getStyleClass().add("home-center");
 
-    Button btnMatch = new Button("Ghép trận");
+    Button btnMatch = new Button();
+    btnMatch.textProperty().bind(I18n.bind("match"));
     btnMatch.getStyleClass().add("match-button");
 
     btnMatch.setOnAction(e -> {
@@ -167,10 +177,13 @@ public class HomeView extends StackPane {
         panel.setMaxHeight(220);
 
         panel.getStyleClass().add("player-info-panel");
-        Label title = new Label("PLAYER INFO");
+        Label title = new Label();
+        title.textProperty().bind(I18n.bind("player_info"));
+
         title.getStyleClass().add("player-info-title");
 
-        Button btnClose = new Button("X");
+        Button btnClose = new Button("x");
+        // btnClose.textProperty().bind(I18n.bind("close"));
         btnClose.getStyleClass().add("close-panel-button");
         btnClose.setOnAction(e -> hidePlayerInfoPanel());
 
@@ -190,13 +203,30 @@ public class HomeView extends StackPane {
         Label lblName = new Label(playerName);
         lblName.getStyleClass().add("player-info-name");
 
-        Label lblGold = new Label("Gold: 2000");
+        Label lblGold = new Label();
+        lblGold.textProperty().bind(I18n.bind("gold_value"));
         lblGold.getStyleClass().add("player-info-text");
 
-        Button btnEdit = new Button("Sửa đổi");
-        btnEdit.getStyleClass().add("profile-action-button");
+        Button btnEdit = new Button();
+        btnEdit.textProperty().bind(I18n.bind("edit"));
+        btnEdit.setOnAction(e -> {
+        hidePlayerInfoPanel();
 
-        Button btnLogout = new Button("Đăng xuất");
+        com.timso.common.model.User user = new com.timso.common.model.User();
+        user.setPlayerName(playerName);
+        user.setAvatar(avatarPath);
+        user.setUsername(username);
+        user.setLastNameChange(lastNameChange);
+
+        if (getScene() != null) {
+            getScene().setRoot(new ProfileDialog(user));
+        }
+    });
+        btnEdit.getStyleClass().add("profile-action-button");
+        
+
+        Button btnLogout = new Button();
+        btnLogout.textProperty().bind(I18n.bind("logout"));
         btnLogout.getStyleClass().addAll("profile-action-button", "logout-button");
         btnLogout.setOnAction(e -> {
             if (getScene() != null) {
@@ -216,11 +246,10 @@ public class HomeView extends StackPane {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        VBox colGame = createStatColumn("Trò chơi", "Tìm số");
-        VBox colMatch = createStatColumn("Trận", "20");
-        VBox colWin = createStatColumn("Thắng", "10");
-        VBox colRate = createStatColumn("Tỷ lệ", "50%");
-
+        VBox colGame = createStatColumn("game", LanguageManager.getString("find_number"));
+        VBox colMatch = createStatColumn("match_count", "20");
+        VBox colWin = createStatColumn("win", "10");
+        VBox colRate = createStatColumn("rate", "50%");
         HBox statsRow = new HBox(28, colGame, colMatch, colWin, colRate);
         statsRow.setAlignment(Pos.CENTER_LEFT);
         statsRow.getStyleClass().add("player-stats-row");
@@ -231,8 +260,9 @@ public class HomeView extends StackPane {
         return panel;
     }
 
-    private VBox createStatColumn(String title, String value) {
-        Label lblTitle = new Label(title);
+    private VBox createStatColumn(String titleKey, String value) {
+        Label lblTitle = new Label();
+        lblTitle.textProperty().bind(I18n.bind(titleKey));
         lblTitle.getStyleClass().add("player-stat-title");
 
         Label lblValue = new Label(value);

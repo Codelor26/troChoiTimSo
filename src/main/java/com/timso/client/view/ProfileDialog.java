@@ -38,17 +38,36 @@ public class ProfileDialog extends StackPane {
         instructionView = new InstructionView(this::hideInstructionView, this::openHomeView);
 
         getChildren().addAll(content, instructionView);
+        LanguageManager.localeProperty().addListener((obs, oldVal, newVal) -> {
+        if (getScene() != null) {
+            getScene().setRoot(new ProfileDialog(currentUser));
+        }
+    });
     }
 
     private StackPane buildContent() {
         StackPane root = new StackPane();
         root.getStyleClass().add("screen-panel");
+        Button btnClose = new Button("X");
+        btnClose.getStyleClass().add("close-panel-button");
+
+        btnClose.setOnAction(e -> {
+            if (getScene() != null) {
+                getScene().setRoot(new HomeView(
+                    currentUser.getPlayerName(),
+                    currentUser.getAvatar(),
+                    currentUser.getUserName(),
+                    currentUser.getLastNameChange()
+                ));
+            }
+        });
 
         VBox card = new VBox(24);
         card.setAlignment(Pos.TOP_CENTER);
         card.getStyleClass().add("profile-card");
 
-        Label title = new Label("Choose a profile picture and name");
+        Label title = new Label();
+        title.textProperty().bind(I18n.bind("profile_title"));
         title.getStyleClass().add("profile-title");
 
         HBox topRow = new HBox(18);
@@ -59,7 +78,7 @@ public class ProfileDialog extends StackPane {
         previewImage.setPreserveRatio(true);
         previewImage.getStyleClass().add("profile-preview");
 
-        txtPlayerName.setPromptText("Enter your name");
+        txtPlayerName.promptTextProperty().bind(I18n.bind("enter_name"));
         txtPlayerName.getStyleClass().addAll("input-field", "profile-name-field");
 
         topRow.getChildren().addAll(previewImage, txtPlayerName);
@@ -100,12 +119,15 @@ public class ProfileDialog extends StackPane {
         lblError.setVisible(false);
         lblError.setManaged(false);
 
-        Button btnStart = new Button("Start");
+        Button btnStart = new Button();
+        btnStart.textProperty().bind(I18n.bind("start"));
         btnStart.getStyleClass().addAll("action-button", "profile-start-button");
         btnStart.setOnAction(e -> handleStart());
 
         card.getChildren().addAll(title, topRow, avatarPane, lblError, btnStart);
-        root.getChildren().add(card);
+        root.getChildren().addAll(card, btnClose);
+        StackPane.setAlignment(btnClose, Pos.TOP_RIGHT);
+        StackPane.setMargin(btnClose, new Insets(20));
 
         return root;
     }
@@ -137,35 +159,65 @@ public class ProfileDialog extends StackPane {
 
     private void handleStart() {
         String playerName = txtPlayerName.getText() == null ? "" : txtPlayerName.getText().trim();
+        
 
         if (selectedAvatarPath == null || selectedAvatarPath.isBlank()) {
-            showError("Please choose an avatar");
+            showError(LanguageManager.getString("choose_avatar"));
             return;
         }
 
         if (playerName.isEmpty()) {
-            showError("Please enter your name");
+            showError(LanguageManager.getString("name_required"));
             txtPlayerName.requestFocus();
             return;
         }
 
-        if (!playerName.matches("^[\\p{L}\\s]+$")) {
-            showError("Name must contain letters only");
+        if (!playerName.matches("^[\\p{L}]+(?:[ '\\-][\\p{L}]+)*$")) {
+            showError(LanguageManager.getString("name_invalid"));
             txtPlayerName.requestFocus();
             return;
         }
 
         clearError();
         showInstructionView();
+        System.out.println("[" + playerName + "]");
     }
 
     private void showInstructionView() {
-        instructionView.showOverlay();
+        String newName = txtPlayerName.getText().trim();
+        String newAvatar = selectedAvatarPath;
+        boolean isNameChanged = !newName.equals(currentUser.getPlayerName());
+
+        // 1. Kiểm tra ràng buộc 30 ngày nếu có đổi tên
+        if (isNameChanged && currentUser.getPlayerName() != null && !currentUser.getPlayerName().isEmpty()) {
+            java.sql.Timestamp lastChange = currentUser.getLastNameChange();
+            
+            if (lastChange != null) {
+                long diffInMs = System.currentTimeMillis() - lastChange.getTime();
+                long diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+                if (diffInDays < 30) {
+                   showError(LanguageManager.getString("name_change_wait")
+                        .replace("{days}", String.valueOf(30 - diffInDays)));
+                    return; // Dừng lại không cho update
+                }
+            }
+        }
+
+        // 2. Gọi DAO để update (Cập nhật tham số isNameChanged để DAO biết có cần reset mốc 30 ngày không)
         UserDAO dao = new UserDAO();
-        dao.updateProfile(
-                txtPlayerName.getText().trim(),
-                selectedAvatarPath,
-                currentUser.getUserName());
+        boolean success = dao.updateProfile(newName, newAvatar, currentUser.getUserName(), isNameChanged);
+
+        if (success) {
+            // Cập nhật lại object currentUser cục bộ để HomeView hiển thị đúng
+            currentUser.setPlayerName(newName);
+            currentUser.setAvatar(newAvatar);
+            
+            // Hiển thị overlay hướng dẫn
+            instructionView.showOverlay();
+        } else {
+            showError(LanguageManager.getString("profile_update_error"));
+        }
     }
 
     private void hideInstructionView() {
