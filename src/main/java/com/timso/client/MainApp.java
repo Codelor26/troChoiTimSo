@@ -5,7 +5,6 @@ import com.timso.client.view.LoginView;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 public class MainApp extends Application {
     // phai extends Application de chay duoc JavaFX
     @Override

@@ -130,10 +130,47 @@ public class Skill extends StackPane {
 
     return root;
 }
-private void showRewardVideo() {
-    String videoUrl = Objects.requireNonNull(
-            getClass().getResource("/images/302281_tiny.mp4")
+
+    // private String getRandomVideoUrl() { //random bằng url
+    //     String[] ads = {
+    //         "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
+    //         "https://samplelib.com/lib/preview/mp4/sample-10s.mp4",
+    //         "https://www.w3schools.com/html/mov_bbb.mp4",
+    //         "https://content.pexels.com/aigc-bundle/videos/d3c2ec4a-24af-4dca-9325-98edc271647b.mp4",
+    //         "https://content.pexels.com/aigc-bundle/videos/c94d69c1-4ffa-40d3-bb99-2ed8e2033535.mp4",
+    //         "https://content.pexels.com/aigc-bundle/videos/b3804eb6-9722-4d74-a7a0-6dbad5aa8103.mp4",
+    //         "https://content.pexels.com/aigc-bundle/videos/acfc4524-8041-4c83-957d-f85340b765fe.mp4"
+    //     };
+
+    //     int index = (int) (Math.random() * ads.length);
+    //     return ads[index];
+    // }
+
+    private String getRandomLocalVideo() { //random bằng localvidoe
+    String[] videos = {
+        "/images/302281_tiny.mp4",
+        "/images/c94d69c1-4ffa-40d3-bb99-2ed8e2033535.mp4",
+        "/images/d3c2ec4a-24af-4dca-9325-98edc271647b.mp4",
+        "/images/mov_bbb.mp4",
+        "/images/sample-5s.mp4",
+        "/images/sample-15s.mp4"
+    };
+
+    int index = (int) (Math.random() * videos.length);
+
+    return Objects.requireNonNull(
+            getClass().getResource(videos[index])
     ).toExternalForm();
+}
+
+private void showRewardVideo() {
+    //String videoUrl = getRandomVideoUrl(); //url
+
+    // String videoUrl = Objects.requireNonNull(
+    //         getClass().getResource("/images/302281_tiny.mp4") 
+    // ).toExternalForm();
+
+    String videoUrl = getRandomLocalVideo(); //localvideo
 
     Media media = new Media(videoUrl);
     MediaPlayer mediaPlayer = new MediaPlayer(media);
