@@ -2,6 +2,7 @@
 package com.timso.client.view;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -41,7 +42,7 @@ import com.timso.server.dao.*;
 
 public class LoginView extends StackPane {
 
-    private static final Pattern FULLNAME_PATTERN = Pattern.compile("^[\\p{L}\\s]+$");
+    private static final Pattern FULLNAME_PATTERN = Pattern.compile("^[\\p{L}]+(?:[ '\\-][\\p{L}]+)*$");
     private static final Pattern GMAIL_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z0-9._%+-]*@gmail\\.com$",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern STRONG_PASSWORD_PATTERN = Pattern
@@ -65,14 +66,13 @@ public class LoginView extends StackPane {
     private final Label lblEmailError = new Label("");
     private final Label lblRegisterPasswordError = new Label("");
 
-    private final RadioButton rbMale = new RadioButton("male");
-    private final RadioButton rbFemale = new RadioButton("female");
+    private final RadioButton rbMale = new RadioButton();
+private final RadioButton rbFemale = new RadioButton();
 
-    private final Button btnOpenRegister = new Button("Register");
-    private final Button btnLogin = new Button("Login");
-    private final Button btnBack = new Button("Back");
-    private final Button btnCreate = new Button("Create");
-
+private final Button btnOpenRegister = new Button();
+private final Button btnLogin = new Button();
+private final Button btnBack = new Button();
+private final Button btnCreate = new Button();
     private InstructionView instructionView;
 
     public LoginView() {
@@ -110,7 +110,19 @@ public class LoginView extends StackPane {
         dpBirthDay.valueProperty().addListener((obs, oldVal, newVal) -> clearFieldError(dpBirthDay, lblBirthDayError));
         txtEmail.textProperty().addListener((obs, oldVal, newVal) -> clearFieldError(txtEmail, lblEmailError));
         txtRegisterPassword.textProperty()
-                .addListener((obs, oldVal, newVal) -> clearFieldError(txtRegisterPassword, lblRegisterPasswordError));
+            .addListener((obs, oldVal, newVal) -> clearFieldError(txtRegisterPassword, lblRegisterPasswordError));
+        rbMale.textProperty().bind(I18n.bind("male"));
+        rbFemale.textProperty().bind(I18n.bind("female"));
+
+        btnOpenRegister.textProperty().bind(I18n.bind("register"));
+        btnLogin.textProperty().bind(I18n.bind("login"));
+        btnBack.textProperty().bind(I18n.bind("back"));
+        btnCreate.textProperty().bind(I18n.bind("create"));     
+        LanguageManager.localeProperty().addListener((obs, oldVal, newVal) -> {
+            if (getScene() != null) {
+                getScene().setRoot(new LoginView());
+            }
+        });
     }
 
     private void configureDatePicker() {
@@ -173,7 +185,8 @@ public class LoginView extends StackPane {
         card.setSpacing(10);
         card.getStyleClass().addAll("form-card", "login-card");
 
-        Label title = new Label("LOGIN");
+        Label title = new Label();
+        title.textProperty().bind(I18n.bind("login_title"));
         title.getStyleClass().add("form-title");
 
         btnOpenRegister.getStyleClass().add("action-button");
@@ -187,10 +200,12 @@ public class LoginView extends StackPane {
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
         HBox header = new HBox();
-        Label label = new Label("Password");
+        Label label = new Label();
+        label.textProperty().bind(I18n.bind("password"));
         label.getStyleClass().add("form-label");
 
-        Button forgotBtn = new Button("Forgot Password?");
+        Button forgotBtn = new Button();
+        forgotBtn.textProperty().bind(I18n.bind("forgot_password"));
         forgotBtn.getStyleClass().add("link-button");
         forgotBtn.setOnAction(e -> openResetDialog());
 
@@ -198,14 +213,14 @@ public class LoginView extends StackPane {
         HBox.setHgrow(spacerHeader, Priority.ALWAYS);
 
         header.getChildren().addAll(label, spacerHeader, forgotBtn);
-
-        VBox passwordBox = new VBox(4, header, txtPassword, lblPasswordError);
+        StackPane passwordWithEye = createPasswordFieldWithIcon(txtPassword);
+        VBox passwordBox = new VBox(4, header, passwordWithEye, lblPasswordError);
         passwordBox.getStyleClass().add("field-group");
         txtPassword.getStyleClass().add("input-field");
 
         card.getChildren().addAll(
                 title,
-                createFieldBox("Username", txtUsername, lblUsernameError),
+                createFieldBox("username", txtUsername, lblUsernameError),
                 passwordBox,
                 spacer,
                 buttonRow);
@@ -222,7 +237,8 @@ public class LoginView extends StackPane {
         card.setAlignment(Pos.TOP_CENTER);
         card.getStyleClass().addAll("form-card", "register-card");
 
-        Label title = new Label("REGISTER");
+        Label title = new Label();
+        title.textProperty().bind(I18n.bind("register"));
         title.getStyleClass().add("form-title");
 
         ToggleGroup genderGroup = new ToggleGroup();
@@ -242,6 +258,8 @@ public class LoginView extends StackPane {
         actionRow.getStyleClass().add("action-row");
 
         GridPane grid = new GridPane();
+        grid.setVgap(24);
+        grid.setHgap(36);
         grid.getStyleClass().add("register-grid");
 
         ColumnConstraints col1 = new ColumnConstraints();
@@ -249,15 +267,28 @@ public class LoginView extends StackPane {
 
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setPercentWidth(50);
-
+        StackPane registerPass = createPasswordFieldWithIcon(txtRegisterPassword);
         grid.getColumnConstraints().addAll(col1, col2);
 
-        grid.add(createFieldBox("Fullname", txtFullName, lblFullNameError), 0, 0);
-        grid.add(createFieldBox("Birth day", dpBirthDay, lblBirthDayError), 1, 0);
+        grid.add(createFieldBox("fullname", txtFullName, lblFullNameError), 0, 0);
+        grid.add(createFieldBox("birth_day", dpBirthDay, lblBirthDayError), 1, 0);
         // GridPane.setHgrow(dpBirthDay, Priority.ALWAYS);
         // dpBirthDay.setMaxWidth(Double.MAX_VALUE);
-        grid.add(createFieldBox("Email", txtEmail, lblEmailError), 0, 1);
-        grid.add(createFieldBox("Password", txtRegisterPassword, lblRegisterPasswordError), 1, 1);
+        grid.add(createFieldBox("email", txtEmail, lblEmailError), 0, 1);
+        // grid.add(createFieldBox("password", txtRegisterPassword, lblRegisterPasswordError), 1, 1);
+        StackPane registerPass1 = createPasswordFieldWithIcon(txtRegisterPassword);
+        registerPass.getStyleClass().add("input-field");
+        Label passLabel = new Label();
+        passLabel.textProperty().bind(I18n.bind("password"));
+        passLabel.getStyleClass().add("form-label");
+
+        lblRegisterPasswordError.setVisible(false);
+        lblRegisterPasswordError.setManaged(false);
+
+        VBox passBox = new VBox(4, passLabel, registerPass1, lblRegisterPasswordError);
+        passBox.getStyleClass().add("field-group");
+
+        grid.add(passBox, 1, 1);
         grid.add(genderRow, 0, 2);
         grid.add(actionRow, 1, 2);
 
@@ -267,15 +298,20 @@ public class LoginView extends StackPane {
         return wrapper;
     }
 
-    private VBox createFieldBox(String labelText, Control input, Label errorLabel) {
-        Label label = new Label(labelText);
+    private VBox createFieldBox(String key, Control input, Label errorLabel) {
+        Label label = new Label();
+        label.textProperty().bind(I18n.bind(key)); 
+
         label.getStyleClass().add("form-label");
 
         input.getStyleClass().add("input-field");
         input.setMaxWidth(Double.MAX_VALUE);
 
         errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
+        errorLabel.setManaged(true);
+        errorLabel.setMinHeight(22);
+        errorLabel.setPrefHeight(22);
+        errorLabel.setWrapText(true);
 
         VBox box = new VBox(4, label, input, errorLabel);
         box.getStyleClass().add("field-group");
@@ -306,10 +342,10 @@ public class LoginView extends StackPane {
         String password = safeTrim(txtPassword.getText());
 
         if (username.isEmpty()) {
-            showFieldError(txtUsername, lblUsernameError, "Please enter username");
+            showFieldError(txtUsername, lblUsernameError, I18n.bind("error_username_required").get());
             return;
         } else if (password.isEmpty()) {
-            showFieldError(txtPassword, lblPasswordError, "Please enter password");
+            showFieldError(txtPassword, lblPasswordError, I18n.bind("error_password_required").get());
             return;
         } else {
             UserDAO userDao = new UserDAO();
@@ -322,7 +358,6 @@ public class LoginView extends StackPane {
                 return;
             }
         }
-        // System.out.println("Bat dau dang nhap...");
     }
 
     private void handleAfterLogin(User user) {
@@ -330,8 +365,11 @@ public class LoginView extends StackPane {
             getScene().setRoot(new ProfileDialog(user)); // truyền user
         } else {
             getScene().setRoot(new HomeView(
-                    user.getPlayerName(),
-                    user.getAvatar()));
+                user.getPlayerName(),
+                user.getAvatar(),
+                user.getUserName(),
+                user.getLastNameChange()
+            ));
         }
     }
 
@@ -347,37 +385,37 @@ public class LoginView extends StackPane {
         String password = safeTrim(txtRegisterPassword.getText());
 
         if (fullName.isEmpty()) {
-            showFieldError(txtFullName, lblFullNameError, "Please enter full name");
+            showFieldError(txtFullName, lblFullNameError, I18n.bind("error_username_required").get());
             return;
         }
 
         if (!FULLNAME_PATTERN.matcher(fullName).matches()) {
-            showFieldError(txtFullName, lblFullNameError, "Full name must contain letters only");
+            showFieldError(txtFullName, lblFullNameError, I18n.bind("error_username_invalid").get());
             return;
         }
 
         if (birthDay == null) {
-            showFieldError(dpBirthDay, lblBirthDayError, "Please choose birth day");
+            showFieldError(dpBirthDay, lblBirthDayError, I18n.bind("error_birth_required").get());
             return;
         }
 
         if (birthDay.isAfter(LocalDate.now())) {
-            showFieldError(dpBirthDay, lblBirthDayError, "Birth day cannot be in the future");
+            showFieldError(dpBirthDay, lblBirthDayError, I18n.bind("error_birth_invalid").get());
             return;
         }
 
         if (email.isEmpty()) {
-            showFieldError(txtEmail, lblEmailError, "Please enter email");
+            showFieldError(txtEmail, lblEmailError, I18n.bind("error_email_required").get());
             return;
         }
 
         if (!GMAIL_PATTERN.matcher(email).matches()) {
-            showFieldError(txtEmail, lblEmailError, "Email must end with @gmail.com && start with letter");
+            showFieldError(txtEmail, lblEmailError, I18n.bind("error_email_invalid").get());
             return;
         }
 
         if (password.isEmpty()) {
-            showFieldError(txtRegisterPassword, lblRegisterPasswordError, "Please enter password");
+            showFieldError(txtRegisterPassword, lblRegisterPasswordError, I18n.bind("error_password_required").get());
             return;
         }
 
@@ -385,11 +423,12 @@ public class LoginView extends StackPane {
             showFieldError(
                     txtRegisterPassword,
                     lblRegisterPasswordError,
-                    "Min 8 chars, include letter, number, special char");
+                    I18n.bind("error_password_weak").get());
             return;
         }
+        
 
-        System.out.println("Bat dau dang ky tài khoản...");
+        // System.out.println("Bat dau dang ky tài khoản...");
         User newUser = new User();
         newUser.setUsername(email);
         newUser.setPassword(password);
@@ -399,7 +438,7 @@ public class LoginView extends StackPane {
 
         UserDAO userDao = new UserDAO();
         if (userDao.checkEmailExists(email)) {
-            showFieldError(txtEmail, lblEmailError, "Email already exists");
+            showFieldError(txtEmail, lblEmailError, I18n.bind("error_email_exists").get());
             return;
         }
         if (userDao.register(newUser)) {
@@ -411,6 +450,7 @@ public class LoginView extends StackPane {
 
         }
     }
+
 
     private void openResetDialog() {
         Stage stage = new Stage();
@@ -491,12 +531,6 @@ public class LoginView extends StackPane {
         stage.show();
     }
 
-    private void showError(String msg) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-        alert.setContentText(msg);
-        alert.showAndWait();
-    }
-
     private void showSuccess(String msg) {
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
@@ -570,7 +604,7 @@ public class LoginView extends StackPane {
         field.getStyleClass().remove("input-error");
         errorLabel.setText("");
         errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
+        errorLabel.setManaged(true);
     }
 
     private void clearLoginErrors() {
@@ -606,7 +640,41 @@ public class LoginView extends StackPane {
         loginPage.setVisible(false);
         loginPage.setManaged(false);
     }
+    private StackPane createPasswordFieldWithIcon(PasswordField passwordField) {
+    TextField visibleField = new TextField();
 
+    // bind dữ liệu
+    visibleField.textProperty().bindBidirectional(passwordField.textProperty());
+
+    // style giống nhau
+    passwordField.getStyleClass().add("input-field");
+    visibleField.getStyleClass().add("input-field");
+
+    visibleField.setVisible(false);
+    visibleField.setManaged(false);
+
+    Button eyeBtn = new Button("👁");
+    eyeBtn.getStyleClass().add("eye-inside");
+
+    eyeBtn.setOnAction(e -> {
+        boolean isShowing = visibleField.isVisible();
+
+        visibleField.setVisible(!isShowing);
+        visibleField.setManaged(!isShowing);
+
+        passwordField.setVisible(isShowing);
+        passwordField.setManaged(isShowing);
+    });
+
+    StackPane stack = new StackPane(passwordField, visibleField);
+
+    StackPane container = new StackPane(stack, eyeBtn);
+
+    StackPane.setAlignment(eyeBtn, Pos.CENTER_RIGHT);
+    StackPane.setMargin(eyeBtn, new Insets(0, 10, 0, 0));
+
+    return container;
+}
     public TextField getTxtUsername() {
         return txtUsername;
     }

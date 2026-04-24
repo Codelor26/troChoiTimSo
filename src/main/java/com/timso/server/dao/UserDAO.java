@@ -35,6 +35,7 @@ public class UserDAO {
                         user.setGold(rs.getInt("gold"));
                         user.setAvatar(rs.getString("avatar"));
                         user.setPlayerName(rs.getString("player_name"));
+                        user.setLastNameChange(rs.getTimestamp("last_name_change"));
 
                         return user;
                     }
@@ -115,23 +116,30 @@ public class UserDAO {
         }
     }
 
-    public boolean updateProfile(String name, String avatar, String email) {
-        String sql = "UPDATE users SET full_name = ?, avatar = ? WHERE username = ?";
-        try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+    public boolean updateProfile(String name, String avatar, String email, boolean resetTimer) {
+        // Nếu resetTimer = true (có đổi tên), cập nhật last_name_change thành NOW()
+        String sql = resetTimer 
+            ? "UPDATE users SET player_name = ?, avatar = ?, last_name_change = NOW() WHERE username = ?"
+            : "UPDATE users SET avatar = ? WHERE username = ?";
 
-            ps.setString(1, name);
-            ps.setString(2, avatar);
-            ps.setString(3, email);
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (resetTimer) {
+                ps.setString(1, name);
+                ps.setString(2, avatar);
+                ps.setString(3, email);
+            } else {
+                ps.setString(1, avatar);
+                ps.setString(2, email);
+            }
 
             return ps.executeUpdate() > 0;
-
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
-
     public boolean checkEmailExists(String email) {
         String sql = "SELECT * FROM users WHERE username = ?";
         try (Connection conn = DBConnection.getConnection();

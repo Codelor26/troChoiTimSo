@@ -55,7 +55,8 @@ public class Skill extends StackPane {
     HBox.setHgrow(leftSpacer, javafx.scene.layout.Priority.ALWAYS);
     HBox.setHgrow(rightSpacer, javafx.scene.layout.Priority.ALWAYS);
 
-    Label title = new Label("Power");
+    Label title = new Label();
+    title.textProperty().bind(I18n.bind("skill_title"));
     title.getStyleClass().add("skill-title");
 
     HBox goldBox = new HBox(6);
@@ -74,7 +75,7 @@ public class Skill extends StackPane {
             200,
             false,
             false,
-            "Làm sáng số đúng",
+            "skill_light",
             PlayerSession::getLightSkill,
             () -> PlayerSession.buyLightSkill()
     );
@@ -83,7 +84,7 @@ public class Skill extends StackPane {
             300,
             true,
             false,
-            "Che màn hình đối thủ",
+            "skill_dark",
             PlayerSession::getDarkSkill,
             () -> PlayerSession.buyDarkSkill()
     );
@@ -92,14 +93,15 @@ public class Skill extends StackPane {
             500,
             true,
             true,
-            "Đóng băng đối thủ",
+            "skill_freeze",
             PlayerSession::getFreezeSkill,
             () -> PlayerSession.buyFreezeSkill()
     );
 
     cardRow.getChildren().addAll(cardLight, cardDark, cardFreeze);
 
-    Button btnClaim = new Button("Nhận 1000");
+    Button btnClaim = new Button();
+    btnClaim.textProperty().bind(I18n.bind("claim_reward"));
     btnClaim.setGraphic(createCoinIcon(36));
     btnClaim.setContentDisplay(ContentDisplay.RIGHT);
     btnClaim.getStyleClass().addAll("action-button", "skill-claim-button");
@@ -180,7 +182,8 @@ private void showRewardVideo() {
     mediaView.setFitWidth(720);
     mediaView.setFitHeight(405);
 
-    Label lblWatching = new Label("Xem hết video để nhận 1000 vàng");
+    Label lblWatching = new Label();
+        lblWatching.textProperty().bind(I18n.bind("watch_video_reward"));
     lblWatching.getStyleClass().add("reward-text");
 
     VBox videoBox = new VBox(14, mediaView, lblWatching);
@@ -195,7 +198,7 @@ private void showRewardVideo() {
     mediaPlayer.setOnEndOfMedia(() -> {
         PlayerSession.addGold(1000);
         refreshView();
-        showMessage("Đã nhận 1000 vàng");
+        showMessage(I18n.bind("reward_success").get());
         mediaPlayer.stop();
         mediaPlayer.dispose();
         rewardOverlay.setVisible(false);
@@ -204,7 +207,7 @@ private void showRewardVideo() {
     });
 
     mediaPlayer.setOnError(() -> {
-        showMessage("Không thể phát video thưởng");
+        showMessage(I18n.bind("reward_error").get());
         mediaPlayer.dispose();
         rewardOverlay.setVisible(false);
         rewardOverlay.setManaged(false);
@@ -232,7 +235,8 @@ private void showRewardVideo() {
         previewWrapper.getChildren().add(previewNumbers);
 
         if (showFreezeText) {
-            Label freezeText = new Label("You are frozen");
+            Label freezeText = new Label();
+            freezeText.textProperty().bind(I18n.bind("freeze_text"));
             freezeText.getStyleClass().add("skill-freeze-text");
             previewWrapper.getChildren().add(freezeText);
         }
@@ -253,20 +257,26 @@ private void showRewardVideo() {
         ImageView coinIcon = createCoinIcon(30);
         priceRow.getChildren().addAll(lblPrice, coinIcon);
 
-        Label lblSkillName = new Label(skillName);
+        
+        Label lblSkillName = new Label();
+        lblSkillName.textProperty().bind(I18n.bind(skillName));
         lblSkillName.getStyleClass().add("setting-feedback-text");
         lblSkillName.setWrapText(true);
         lblSkillName.setMaxWidth(150);
         lblSkillName.setAlignment(Pos.CENTER);
 
-        Button btnBuy = new Button("Mua");
+        Button btnBuy = new Button();
+        btnBuy.textProperty().bind(I18n.bind("buy"));
         btnBuy.getStyleClass().addAll("action-button", "skill-buy-button");
         btnBuy.setOnAction(e -> {
             boolean bought = buyAction.buy();
             if (bought) {
-                showMessage("Mua thành công: " + skillName);
+            showMessage(
+                LanguageManager.getString("buy_success") + " " +
+                LanguageManager.getString(skillName)
+            );            
             } else {
-                showMessage("Không đủ vàng để mua");
+                showMessage(LanguageManager.getString("not_enough_gold"));
             }
             refreshView();
         });

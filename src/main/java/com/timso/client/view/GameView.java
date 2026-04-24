@@ -240,6 +240,7 @@ public class GameView extends StackPane {
         panel.setAlignment(Pos.TOP_CENTER);
 
         Label title = new Label("Kỹ năng");
+        title.textProperty().bind(I18n.bind("skill"));
         title.getStyleClass().add("player-info-title");
 
         Button btnClose = new Button("X");
@@ -279,6 +280,7 @@ public class GameView extends StackPane {
 
         if (list.getChildren().isEmpty()) {
             Label empty = new Label("Bạn chưa mua kỹ năng nào");
+            empty.textProperty().bind(I18n.bind("no_skill"));
             empty.getStyleClass().add("player-info-text");
             list.getChildren().add(empty);
         }
@@ -294,7 +296,8 @@ public class GameView extends StackPane {
         Label lblCount = new Label("x" + count);
         lblCount.getStyleClass().add("player-info-text");
 
-        Button btnUse = new Button("Dùng");
+        Button btnUse = new Button();
+        btnUse.textProperty().bind(I18n.bind("use"));
         btnUse.getStyleClass().add("profile-action-button");
         btnUse.setOnAction(e -> action.run());
 

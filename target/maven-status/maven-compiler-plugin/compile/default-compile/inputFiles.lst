@@ -3,7 +3,13 @@ D:\troChoiTimSo\src\main\java\com\timso\client\MainApp.java
 D:\troChoiTimSo\src\main\java\com\timso\client\network\ClientSocket.java
 D:\troChoiTimSo\src\main\java\com\timso\client\view\GameView.java
 D:\troChoiTimSo\src\main\java\com\timso\client\view\HomeView.java
+<<<<<<< HEAD
 D:\troChoiTimSo\src\main\java\com\timso\client\view\InstructionView.java
+=======
+D:\troChoiTimSo\src\main\java\com\timso\client\view\I18n.java
+D:\troChoiTimSo\src\main\java\com\timso\client\view\InstructionView.java
+D:\troChoiTimSo\src\main\java\com\timso\client\view\LanguageManager.java
+>>>>>>> ddcdcda357ad8777bebef69fd84911b2fc0e1f60
 D:\troChoiTimSo\src\main\java\com\timso\client\view\LoginView.java
 D:\troChoiTimSo\src\main\java\com\timso\client\view\PlayerSession.java
 D:\troChoiTimSo\src\main\java\com\timso\client\view\ProfileDialog.java

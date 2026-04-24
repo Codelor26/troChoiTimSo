@@ -224,6 +224,22 @@
     -fx-font-size: 40px;
     -fx-font-weight: 900;
 }
+/* để field full width giống input cũ */
+.stack-pane .input-field {
+    -fx-pref-width: 350px;
+}
+
+/* chừa chỗ cho icon */
+.input-field {
+    -fx-padding: 0 35 0 14;
+}
+
+/* icon */
+.eye-inside {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
 
 /* profile */
 .profile-card {
@@ -287,6 +303,20 @@
     -fx-font-size: 13px;
     -fx-font-weight: 700;
     -fx-text-fill: #d94b4b;
+}
+.close-panel-button {
+    -fx-background-color: #ff5c5c;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 50%;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-cursor: hand;
+}
+
+.close-panel-button:hover {
+    -fx-background-color: #ff2e2e;
 }
 
 /* HomeView */
