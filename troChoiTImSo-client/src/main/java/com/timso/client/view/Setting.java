@@ -21,10 +21,13 @@ import java.net.URI;
 import java.util.Objects;
 import javafx.scene.control.ScrollPane;
 
+import com.timso.client.network.AuthClient;
+
 public class Setting extends StackPane {
 
     private String currentPlayerName;
     private String currentAvatarPath;
+    private String currentUsername;
 
     private final TextField txtPlayerName = new TextField();
     private final ComboBox<String> cboLanguage = new ComboBox<>();
@@ -36,11 +39,23 @@ public class Setting extends StackPane {
     public Setting(String playerName, String avatarPath) {
         this.currentPlayerName = playerName;
         this.currentAvatarPath = avatarPath;
+        this.currentUsername = "";
 
         getStyleClass().add("auth-root");
         getStylesheets().add(
-                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm()
-        );
+                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm());
+
+        getChildren().add(buildContent());
+    }
+
+    public Setting(String playerName, String avatarPath, String username) {
+        this.currentPlayerName = playerName;
+        this.currentAvatarPath = avatarPath;
+        this.currentUsername = username;
+
+        getStyleClass().add("auth-root");
+        getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm());
 
         getChildren().add(buildContent());
     }
@@ -49,6 +64,8 @@ public class Setting extends StackPane {
         StackPane root = new StackPane();
         root.getStyleClass().add("setting-root");
 
+        LanguageManager lang = LanguageManager.getInstance();
+
         VBox panel = new VBox(14);
         panel.setAlignment(Pos.TOP_CENTER);
         panel.setPrefWidth(760);
@@ -56,23 +73,23 @@ public class Setting extends StackPane {
         panel.getStyleClass().add("setting-panel");
         panel.setPadding(new Insets(22, 26, 24, 26));
 
-        Label title = new Label("Cài đặt");
+        Label title = new Label(lang.getString("setting.title"));
         title.getStyleClass().add("setting-title");
 
-        VBox soundBox = buildSoundSection();
-        VBox profileBox = buildProfileSection();
-        VBox languageBox = buildLanguageSection();
-        VBox feedbackBox = buildFeedbackSection();
+        VBox soundBox = buildSoundSection(lang);
+        VBox profileBox = buildProfileSection(lang);
+        VBox languageBox = buildLanguageSection(lang);
+        VBox feedbackBox = buildFeedbackSection(lang);
 
         lblError.getStyleClass().add("setting-error-label");
         lblError.setVisible(false);
         lblError.setManaged(false);
 
-        Button btnSave = new Button("Lưu");
+        Button btnSave = new Button(lang.getString("setting.button.save"));
         btnSave.getStyleClass().addAll("action-button", "setting-main-button");
-        btnSave.setOnAction(e -> saveAndBackHome());
+        btnSave.setOnAction(e -> saveAndBackHome(lang));
 
-        Button btnBack = new Button("Quay lại");
+        Button btnBack = new Button(lang.getString("setting.button.back"));
         btnBack.getStyleClass().addAll("action-button", "setting-main-button");
         btnBack.setOnAction(e -> backHome());
 
@@ -86,9 +103,8 @@ public class Setting extends StackPane {
                 languageBox,
                 feedbackBox,
                 lblError,
-                actionRow
-        );
-         StackPane contentWrapper = new StackPane(panel);
+                actionRow);
+        StackPane contentWrapper = new StackPane(panel);
         contentWrapper.setAlignment(Pos.TOP_CENTER);
         contentWrapper.setPadding(new Insets(10, 0, 10, 0));
 
@@ -101,11 +117,11 @@ public class Setting extends StackPane {
 
         root.getChildren().add(scrollPane);
         return root;
-        
+
     }
 
-    private VBox buildSoundSection() {
-        VBox box = createSectionBox("Âm thanh");
+    private VBox buildSoundSection(LanguageManager lang) {
+        VBox box = createSectionBox(lang.getString("setting.sound"));
 
         updateToggleText(btnMusic, true);
         updateToggleText(btnEffect, true);
@@ -119,21 +135,21 @@ public class Setting extends StackPane {
         btnMusic.setOnAction(e -> updateToggleText(btnMusic, btnMusic.isSelected()));
         btnEffect.setOnAction(e -> updateToggleText(btnEffect, btnEffect.isSelected()));
 
-        HBox musicRow = new HBox(18, createSectionLabel("Music"), btnMusic);
+        HBox musicRow = new HBox(18, createSectionLabel(lang.getString("setting.music")), btnMusic);
         musicRow.setAlignment(Pos.CENTER_LEFT);
 
-        HBox effectRow = new HBox(18, createSectionLabel("Effect"), btnEffect);
+        HBox effectRow = new HBox(18, createSectionLabel(lang.getString("setting.effect")), btnEffect);
         effectRow.setAlignment(Pos.CENTER_LEFT);
 
         box.getChildren().addAll(musicRow, effectRow);
         return box;
     }
 
-    private VBox buildProfileSection() {
-        VBox box = createSectionBox("Đổi tên + avatar");
+    private VBox buildProfileSection(LanguageManager lang) {
+        VBox box = createSectionBox(lang.getString("setting.profile"));
 
         txtPlayerName.setText(currentPlayerName);
-        txtPlayerName.setPromptText("Nhập tên mới");
+        txtPlayerName.setPromptText(lang.getString("setting.name.prompt"));
         txtPlayerName.getStyleClass().addAll("input-field", "setting-name-field");
 
         avatarPreview.setImage(loadImage(currentAvatarPath));
@@ -185,30 +201,46 @@ public class Setting extends StackPane {
         return box;
     }
 
-    private VBox buildLanguageSection() {
-        VBox box = createSectionBox("Ngôn ngữ");
+    private VBox buildLanguageSection(LanguageManager lang) {
+        VBox box = createSectionBox(lang.getString("setting.language"));
 
+        cboLanguage.getItems().clear();
         cboLanguage.getItems().addAll("Tiếng Việt", "English");
-        cboLanguage.setValue("Tiếng Việt");
+
+        String savedLang = lang.getCurrentLang();
+        cboLanguage.setValue("vi".equals(savedLang) ? "Tiếng Việt" : "English");
         cboLanguage.getStyleClass().add("setting-combo-box");
 
-        HBox row = new HBox(18, createSectionLabel("Chọn ngôn ngữ"), cboLanguage);
+        cboLanguage.setOnAction(e -> {
+            String selected = cboLanguage.getValue();
+            if (selected == null)
+                return;
+            String newLang = selected.equals("Tiếng Việt") ? "vi" : "en";
+            if (!lang.getCurrentLang().equals(newLang)) {
+                lang.setLocale(newLang);
+                if (getScene() != null) {
+                    getScene().setRoot(new Setting(currentPlayerName, currentAvatarPath, currentUsername));
+                }
+            }
+        });
+
+        HBox row = new HBox(18, createSectionLabel(lang.getString("setting.language.choose")), cboLanguage);
         row.setAlignment(Pos.CENTER_LEFT);
 
         box.getChildren().add(row);
         return box;
     }
 
-    private VBox buildFeedbackSection() {
-        VBox box = createSectionBox("Báo lỗi và góp ý");
+    private VBox buildFeedbackSection(LanguageManager lang) {
+        VBox box = createSectionBox(lang.getString("setting.feedback"));
 
-        Label desc = new Label("Nhấn nút bên dưới để gửi email góp ý hoặc báo lỗi cho người phát triển.");
+        Label desc = new Label(lang.getString("setting.feedback.desc"));
         desc.getStyleClass().add("setting-feedback-text");
         desc.setWrapText(true);
 
-        Button btnMail = new Button("Liên hệ qua mail");
+        Button btnMail = new Button(lang.getString("setting.feedback.button"));
         btnMail.getStyleClass().addAll("action-button", "setting-mail-button");
-        btnMail.setOnAction(e -> openFeedbackMail());
+        btnMail.setOnAction(e -> openFeedbackMail(lang));
 
         box.getChildren().addAll(desc, btnMail);
         return box;
@@ -253,19 +285,37 @@ public class Setting extends StackPane {
         button.setText(selected ? "ON" : "OFF");
     }
 
-    private void saveAndBackHome() {
+    private void saveAndBackHome(LanguageManager lang) {
         String newName = txtPlayerName.getText() == null ? "" : txtPlayerName.getText().trim();
 
         if (newName.isEmpty()) {
-            showError("Vui lòng nhập tên.");
+            showError(lang.getString("setting.err.name.empty"));
             txtPlayerName.requestFocus();
             return;
         }
 
         if (!newName.matches("^[\\p{L}\\s]+$")) {
-            showError("Tên chỉ được chứa chữ cái và khoảng trắng.");
+            showError(lang.getString("setting.err.name.format"));
             txtPlayerName.requestFocus();
             return;
+        }
+
+        String usernameToUse = (currentUsername != null && !currentUsername.isEmpty())
+                ? currentUsername
+                : (PlayerSession.getCurrentUser() != null ? PlayerSession.getCurrentUser().getUserName() : "");
+
+        if (!usernameToUse.isEmpty()) {
+            AuthClient authClient = new AuthClient();
+            if (!authClient.updateProfile(usernameToUse, newName, currentAvatarPath)) {
+                showError(authClient.getLastError() == null
+                        ? lang.getString("setting.err.save.fail")
+                        : authClient.getLastError());
+                return;
+            }
+            if (PlayerSession.getCurrentUser() != null) {
+                PlayerSession.getCurrentUser().setPlayerName(newName);
+                PlayerSession.getCurrentUser().setAvatar(currentAvatarPath);
+            }
         }
 
         currentPlayerName = newName;
@@ -275,22 +325,24 @@ public class Setting extends StackPane {
 
     private void backHome() {
         if (getScene() != null) {
-            getScene().setRoot(new HomeView(currentPlayerName, currentAvatarPath));
+            getScene().setRoot(new HomeView(currentPlayerName, currentAvatarPath, null));
         }
     }
 
-    private void openFeedbackMail() {
+    private void openFeedbackMail(LanguageManager lang) {
         try {
             if (Desktop.isDesktopSupported()) {
-                URI mailUri = new URI(
-                        "mailto:timso.support@gmail.com?subject=Feedback%20Find%20Number%20Game"
-                );
-                Desktop.getDesktop().mail(mailUri);
+                String subject = "Góp ý / Báo lỗi Game Tìm Số";
+                String encodedSubject = java.net.URLEncoder.encode(subject, java.nio.charset.StandardCharsets.UTF_8);
+                String gmailComposeUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=codelor2604@gmail.com&su="
+                        + encodedSubject;
+                URI mailUri = new URI(gmailComposeUrl);
+                Desktop.getDesktop().browse(mailUri);
             } else {
-                showError("Máy hiện tại không hỗ trợ mở ứng dụng mail.");
+                showError(lang.getString("setting.err.desktop.notsupport"));
             }
         } catch (Exception ex) {
-            showError("Không thể mở mail mặc định.");
+            showError(lang.getString("setting.err.mail.fail"));
         }
     }
 
@@ -308,7 +360,6 @@ public class Setting extends StackPane {
 
     private Image loadImage(String path) {
         return new Image(
-                Objects.requireNonNull(getClass().getResource(path)).toExternalForm()
-        );
+                Objects.requireNonNull(getClass().getResource(path)).toExternalForm());
     }
 }

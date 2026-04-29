@@ -7,7 +7,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
-    // phai extends Application de chay duoc JavaFX
     @Override
     public void start(Stage primaryStage) {
         Scene scene = new Scene(new LoginView(), 1280, 620);
@@ -19,5 +18,3 @@ public class MainApp extends Application {
         launch(args);
     }
 }
-
-// client - 2

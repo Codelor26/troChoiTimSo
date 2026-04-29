@@ -1,18 +1,45 @@
 package com.timso.client.view;
 
+import com.timso.common.model.User;
+
 public class PlayerSession {
 
-    private static int gold = 2000;
-    private static int lightSkill = 0;
-    private static int darkSkill = 0;
-    private static int freezeSkill = 0;
+    private static int gold;
+    private static int lightSkill;
+    private static int darkSkill;
+    private static int freezeSkill;
+    private static User currentUser;
+    private static int currentGold;
+    private static String currentUsername;
+
+    public static void setCurrentUser(User user) {
+        currentUser = user;
+        if (user != null) {
+            currentUsername = user.getUserName();
+            currentGold = user.getGold();
+        }
+    }
+
+    public static void setGold(int gold) {
+        currentGold = gold;
+        if (currentUser != null) {
+            currentUser.setGold(gold);
+        }
+    }
+
+    public static User getCurrentUser() {
+        return currentUser;
+    }
 
     public static int getGold() {
-        return gold;
+        return currentGold;
     }
 
     public static void addGold(int amount) {
-        gold += amount;
+        currentGold += amount;
+        if (currentUser != null) {
+            currentUser.setGold(currentGold);
+        }
     }
 
     public static int getLightSkill() {

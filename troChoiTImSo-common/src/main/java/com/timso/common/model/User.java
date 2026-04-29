@@ -3,7 +3,7 @@ package com.timso.common.model;
 import java.sql.Date;
 import lombok.Data;
 
-@Data // tu dong tao get/set/tostring/equals/hashcode
+@Data
 public class User {
     private int id;
     private String username;

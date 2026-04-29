@@ -17,12 +17,13 @@ public class InstructionView extends StackPane {
 
         VBox panel = new VBox(18);
         panel.getStyleClass().add("rules-panel");
-        // panel.setAlignment(Pos.TOP_CENTER);
         panel.setAlignment(Pos.CENTER);
         panel.setMaxWidth(600);
         panel.setMaxHeight(450);
 
-        Label title = new Label("Luật chơi");
+        LanguageManager lang = LanguageManager.getInstance();
+
+        Label title = new Label(lang.getString("instruction.title"));
         title.getStyleClass().add("rules-title");
 
         VBox contentBox = new VBox(14);
@@ -30,14 +31,14 @@ public class InstructionView extends StackPane {
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.setPadding(new Insets(24, 28, 24, 28));
 
-        Label heading = new Label("Luật game tìm số 2 người chơi:");
+        Label heading = new Label(lang.getString("instruction.heading"));
         heading.getStyleClass().add("rules-heading");
 
-        Label rule1 = new Label("• Số cần tìm sẽ hiện lên phía trên màn hình.");
-        Label rule2 = new Label("• Nhiệm vụ của người chơi cần tìm đúng số đó để chọn.");
-        Label rule3 = new Label("• Người chơi được cộng điểm khi chọn đúng số cần tìm,\n  chọn sai không bị trừ điểm.");
-        Label rule4 = new Label("• Trò chơi kết thúc khi hết thời gian là 2 phút.");
-        Label rule5 = new Label("• Người chơi nào có nhiều điểm đúng hơn thì chiến thắng.");
+        Label rule1 = new Label(lang.getString("instruction.rule1"));
+        Label rule2 = new Label(lang.getString("instruction.rule2"));
+        Label rule3 = new Label(lang.getString("instruction.rule3"));
+        Label rule4 = new Label(lang.getString("instruction.rule4"));
+        Label rule5 = new Label(lang.getString("instruction.rule5"));
 
         rule1.getStyleClass().add("rules-text");
         rule2.getStyleClass().add("rules-text");
@@ -47,7 +48,7 @@ public class InstructionView extends StackPane {
 
         contentBox.getChildren().addAll(heading, rule1, rule2, rule3, rule4, rule5);
 
-        Button btnClose = new Button("Đóng");
+        Button btnClose = new Button(lang.getString("instruction.button.close"));
         btnClose.getStyleClass().addAll("action-button", "rules-close-button");
         btnClose.setOnAction(e -> {
             if (onCloseAction != null) {
@@ -55,7 +56,7 @@ public class InstructionView extends StackPane {
             }
         });
 
-        Button btnStart = new Button("Bắt đầu chơi");
+        Button btnStart = new Button(lang.getString("instruction.button.start"));
         btnStart.getStyleClass().addAll("action-button", "rules-start-button");
         btnStart.setOnAction(e -> {
             if (onStartAction != null) {

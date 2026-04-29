@@ -406,19 +406,26 @@
 
 .player-stat-box {
     -fx-alignment: center;
+    -fx-min-width: 60px;
 }
 
 .player-stat-title {
     -fx-font-family: "Consolas";
-    -fx-font-size: 15px;
+    -fx-font-size: 14px;
     -fx-font-weight: 700;
     -fx-text-fill: #111111;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
 }
 
 .player-stat-value {
     -fx-font-family: "Consolas";
-    -fx-font-size: 15px;
+    -fx-font-size: 14px;
     -fx-text-fill: #111111;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
 }
 
 .close-panel-button {
@@ -435,13 +442,13 @@
 }
 
 .profile-action-button {
-    -fx-pref-width: 100px;
+    -fx-pref-width: -1;
     -fx-pref-height: 32px;
     -fx-background-color: #cfcfcf;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
     -fx-font-family: "Consolas";
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: 700;
     -fx-text-fill: #111111;
     -fx-cursor: hand;
@@ -525,15 +532,24 @@
 .board-number-correct {
     -fx-font-family: "Consolas";
     -fx-font-size: 22px;
-    -fx-font-weight: 900;
-    -fx-text-fill: #1f8b2c;
+    -fx-font-weight: 700;
+    -fx-text-fill: #043b14;
 }
 
 .board-number-wrong {
     -fx-font-family: "Consolas";
     -fx-font-size: 22px;
-    -fx-font-weight: 900;
+    -fx-font-weight: 700;
     -fx-text-fill: #d94b4b;
+}
+
+.board-number-opponent {
+    -fx-font-family: "Consolas";
+    -fx-font-size: 22px;
+    /* -fx-background-color: #9C27B0; */
+    -fx-font-weight: 700;
+    -fx-text-fill: rgb(175, 21, 227);
+    /* -fx-effect: dropshadow(gaussian, rgba(156, 39, 176, 0.5), 5, 0, 0, 0); */
 }
 
 .game-back-button {
@@ -937,4 +953,122 @@
 .date-picker .arrow-button {
     -fx-pref-height: 38px;
     -fx-background-insets: 0;
+}
+
+/* Game Over Dialog */
+.game-over-dialog {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: linear-gradient(to bottom right, #ff6b6b, #ee5a24);
+    -fx-border-width: 3;
+    -fx-padding: 30 40 30 40;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0, 0, 0);
+}
+
+.game-over-title {
+    -fx-font-family: "Segoe UI Black", "Arial Black";
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: linear-gradient(to right, #ffd32a, #ff6b6b);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 0);
+}
+
+.game-over-score {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-background-radius: 15;
+    -fx-padding: 10 20 10 20;
+}
+
+.game-over-score-label {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-size: 18px;
+    -fx-text-fill: #cccccc;
+}
+
+.game-over-button {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(to bottom, #ff6b6b, #ee5a24);
+    -fx-text-fill: white;
+    -fx-background-radius: 30;
+    -fx-padding: 10 30 10 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(238, 90, 36, 0.5), 10, 0, 0, 0);
+    -fx-transition: all 0.3s ease;
+}
+
+.game-over-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #ff8e8e, #ff6b3d);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.game-over-animation {
+    -fx-font-size: 50px;
+    -fx-animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.custom-dialog {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
+    -fx-border-color: #ff6b6b;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.custom-dialog .header-panel {
+    -fx-background-color: transparent;
+}
+
+.custom-dialog .label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.custom-dialog .button {
+    -fx-background-color: linear-gradient(to bottom, #ff6b6b, #ee5a24);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-padding: 8 20 8 20;
+}
+
+.custom-dialog .button:hover {
+    -fx-background-color: linear-gradient(to bottom, #ff8e8e, #ff6b3d);
+}
+
+.board-number-lucky-event {
+    -fx-background-color: linear-gradient(to bottom right, #FFD700, #FF8C00);
+    -fx-text-fill: #8B0000;
+    -fx-font-weight: bold;
+    -fx-font-size: 28px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.9), 20, 0, 0, 0);
+    -fx-border-color: #FFD700;
+    -fx-border-width: 3px;
+    -fx-border-radius: 10px;
+}
+
+.board-number-bonus {
+    -fx-background-color: linear-gradient(to bottom right, #FF6347, #FF4500);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(255, 99, 71, 0.8), 15, 0, 0, 0);
 }

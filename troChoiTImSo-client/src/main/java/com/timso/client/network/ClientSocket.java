@@ -11,7 +11,6 @@ import java.util.Scanner;
 public class ClientSocket {
     private String host;
     private int port;
-    // bien luu du lieu tu UI do vao server
     private String dataToSend;
     private String serverResponse;
 
@@ -41,9 +40,7 @@ public class ClientSocket {
         try (Scanner scanner = new Scanner(System.in);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true)) {
-            // gui du lieu den server
             writer.println(dataToSend);
-            // doc phan hoi tu server
             StringBuilder responseBuilder = new StringBuilder();
             String response;
             while ((response = reader.readLine()) != null) {

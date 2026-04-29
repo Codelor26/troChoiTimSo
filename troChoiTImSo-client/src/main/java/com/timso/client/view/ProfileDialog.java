@@ -2,7 +2,6 @@ package com.timso.client.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -17,8 +16,8 @@ import javafx.scene.layout.VBox;
 
 import java.util.Objects;
 
+import com.timso.client.network.AuthClient;
 import com.timso.common.model.User;
-import com.timso.server.dao.UserDAO;
 
 public class ProfileDialog extends StackPane {
 
@@ -48,7 +47,9 @@ public class ProfileDialog extends StackPane {
         card.setAlignment(Pos.TOP_CENTER);
         card.getStyleClass().add("profile-card");
 
-        Label title = new Label("Choose a profile picture and name");
+        LanguageManager lang = LanguageManager.getInstance();
+
+        Label title = new Label(lang.getString("profile.title"));
         title.getStyleClass().add("profile-title");
 
         HBox topRow = new HBox(18);
@@ -59,7 +60,7 @@ public class ProfileDialog extends StackPane {
         previewImage.setPreserveRatio(true);
         previewImage.getStyleClass().add("profile-preview");
 
-        txtPlayerName.setPromptText("Enter your name");
+        txtPlayerName.setPromptText(lang.getString("profile.name.prompt"));
         txtPlayerName.getStyleClass().addAll("input-field", "profile-name-field");
 
         topRow.getChildren().addAll(previewImage, txtPlayerName);
@@ -100,7 +101,7 @@ public class ProfileDialog extends StackPane {
         lblError.setVisible(false);
         lblError.setManaged(false);
 
-        Button btnStart = new Button("Start");
+        Button btnStart = new Button(lang.getString("profile.button.start"));
         btnStart.getStyleClass().addAll("action-button", "profile-start-button");
         btnStart.setOnAction(e -> handleStart());
 
@@ -136,22 +137,29 @@ public class ProfileDialog extends StackPane {
     }
 
     private void handleStart() {
+        LanguageManager lang = LanguageManager.getInstance();
         String playerName = txtPlayerName.getText() == null ? "" : txtPlayerName.getText().trim();
 
         if (selectedAvatarPath == null || selectedAvatarPath.isBlank()) {
-            showError("Please choose an avatar");
+            showError(lang.getString("profile.err.avatar"));
             return;
         }
 
         if (playerName.isEmpty()) {
-            showError("Please enter your name");
+            showError(lang.getString("profile.err.name.empty"));
             txtPlayerName.requestFocus();
             return;
         }
 
         if (!playerName.matches("^[\\p{L}\\s]+$")) {
-            showError("Name must contain letters only");
+            showError(lang.getString("profile.err.name.format"));
             txtPlayerName.requestFocus();
+            return;
+        }
+
+        AuthClient authClient = new AuthClient();
+        if (!authClient.updateProfile(currentUser.getUserName(), playerName, selectedAvatarPath)) {
+            showError(authClient.getLastError() == null ? lang.getString("profile.err.update") : authClient.getLastError());
             return;
         }
 
@@ -161,11 +169,6 @@ public class ProfileDialog extends StackPane {
 
     private void showInstructionView() {
         instructionView.showOverlay();
-        UserDAO dao = new UserDAO();
-        dao.updateProfile(
-                txtPlayerName.getText().trim(),
-                selectedAvatarPath,
-                currentUser.getUserName());
     }
 
     private void hideInstructionView() {
@@ -176,7 +179,8 @@ public class ProfileDialog extends StackPane {
         if (getScene() != null) {
             getScene().setRoot(new HomeView(
                     txtPlayerName.getText().trim(),
-                    selectedAvatarPath));
+                    selectedAvatarPath,
+                    currentUser));
         }
     }
 

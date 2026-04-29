@@ -74,7 +74,7 @@ public class Skill extends StackPane {
             200,
             false,
             false,
-            "Làm sáng số đúng",
+            LanguageManager.getInstance().getString("skill.light"),
             PlayerSession::getLightSkill,
             () -> PlayerSession.buyLightSkill()
     );
@@ -83,7 +83,7 @@ public class Skill extends StackPane {
             300,
             true,
             false,
-            "Che màn hình đối thủ",
+            LanguageManager.getInstance().getString("skill.dark"),
             PlayerSession::getDarkSkill,
             () -> PlayerSession.buyDarkSkill()
     );
@@ -92,14 +92,14 @@ public class Skill extends StackPane {
             500,
             true,
             true,
-            "Đóng băng đối thủ",
+            LanguageManager.getInstance().getString("skill.freeze"),
             PlayerSession::getFreezeSkill,
             () -> PlayerSession.buyFreezeSkill()
     );
 
     cardRow.getChildren().addAll(cardLight, cardDark, cardFreeze);
 
-    Button btnClaim = new Button("Nhận 1000");
+    Button btnClaim = new Button(LanguageManager.getInstance().getString("skill.btn.claim.1000"));
     btnClaim.setGraphic(createCoinIcon(36));
     btnClaim.setContentDisplay(ContentDisplay.RIGHT);
     btnClaim.getStyleClass().addAll("action-button", "skill-claim-button");
@@ -143,7 +143,7 @@ private void showRewardVideo() {
     mediaView.setFitWidth(720);
     mediaView.setFitHeight(405);
 
-    Label lblWatching = new Label("Xem hết video để nhận 1000 vàng");
+    Label lblWatching = new Label(LanguageManager.getInstance().getString("skill.video.watch"));
     lblWatching.getStyleClass().add("reward-text");
 
     VBox videoBox = new VBox(14, mediaView, lblWatching);
@@ -158,7 +158,7 @@ private void showRewardVideo() {
     mediaPlayer.setOnEndOfMedia(() -> {
         PlayerSession.addGold(1000);
         refreshView();
-        showMessage("Đã nhận 1000 vàng");
+        showMessage(LanguageManager.getInstance().getString("skill.video.success"));
         mediaPlayer.stop();
         mediaPlayer.dispose();
         rewardOverlay.setVisible(false);
@@ -167,7 +167,7 @@ private void showRewardVideo() {
     });
 
     mediaPlayer.setOnError(() -> {
-        showMessage("Không thể phát video thưởng");
+        showMessage(LanguageManager.getInstance().getString("skill.video.fail"));
         mediaPlayer.dispose();
         rewardOverlay.setVisible(false);
         rewardOverlay.setManaged(false);
@@ -195,7 +195,7 @@ private void showRewardVideo() {
         previewWrapper.getChildren().add(previewNumbers);
 
         if (showFreezeText) {
-            Label freezeText = new Label("You are frozen");
+            Label freezeText = new Label(LanguageManager.getInstance().getString("skill.lbl.frozen"));
             freezeText.getStyleClass().add("skill-freeze-text");
             previewWrapper.getChildren().add(freezeText);
         }
@@ -222,14 +222,14 @@ private void showRewardVideo() {
         lblSkillName.setMaxWidth(150);
         lblSkillName.setAlignment(Pos.CENTER);
 
-        Button btnBuy = new Button("Mua");
+        Button btnBuy = new Button(LanguageManager.getInstance().getString("skill.btn.buy"));
         btnBuy.getStyleClass().addAll("action-button", "skill-buy-button");
         btnBuy.setOnAction(e -> {
             boolean bought = buyAction.buy();
             if (bought) {
-                showMessage("Mua thành công: " + skillName);
+                showMessage(LanguageManager.getInstance().getString("skill.msg.buy.success") + skillName);
             } else {
-                showMessage("Không đủ vàng để mua");
+                showMessage(LanguageManager.getInstance().getString("skill.msg.buy.fail"));
             }
             refreshView();
         });

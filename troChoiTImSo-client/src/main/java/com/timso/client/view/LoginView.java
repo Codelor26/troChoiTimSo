@@ -1,4 +1,3 @@
-// client - 3
 package com.timso.client.view;
 
 import javafx.application.Platform;
@@ -26,6 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import javafx.scene.input.KeyCode;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,8 +36,9 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import com.timso.client.network.AuthClient;
+import com.timso.client.network.GameClient;
 import com.timso.common.model.User;
-import com.timso.server.dao.*;
 
 public class LoginView extends StackPane {
 
@@ -96,6 +97,18 @@ public class LoginView extends StackPane {
         showLoginPage();
 
         btnLogin.setOnAction(e -> validateLoginForm());
+
+        txtUsername.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                btnLogin.fire();
+            }
+        });
+        txtPassword.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                btnLogin.fire();
+            }
+        });
+
         btnCreate.setOnAction(e -> validateRegisterForm());
 
         btnOpenRegister.setOnAction(e -> showRegisterPage());
@@ -164,7 +177,6 @@ public class LoginView extends StackPane {
         brandBox.getChildren().addAll(createBrandIcon(), slogan);
 
         VBox card = new VBox(12);
-        // card.setAlignment(Pos.TOP_CENTER);
         card.setAlignment(Pos.CENTER);
         card.setMaxHeight(350);
         card.setMaxWidth(350);
@@ -191,6 +203,7 @@ public class LoginView extends StackPane {
         Button forgotBtn = new Button("Forgot Password?");
         forgotBtn.getStyleClass().add("link-button");
         forgotBtn.setOnAction(e -> openResetDialog());
+        forgotBtn.setFocusTraversable(false);
 
         Region spacerHeader = new Region();
         HBox.setHgrow(spacerHeader, Priority.ALWAYS);
@@ -252,8 +265,6 @@ public class LoginView extends StackPane {
 
         grid.add(createFieldBox("Fullname", txtFullName, lblFullNameError), 0, 0);
         grid.add(createFieldBox("Birth day", dpBirthDay, lblBirthDayError), 1, 0);
-        // GridPane.setHgrow(dpBirthDay, Priority.ALWAYS);
-        // dpBirthDay.setMaxWidth(Double.MAX_VALUE);
         grid.add(createFieldBox("Email", txtEmail, lblEmailError), 0, 1);
         grid.add(createFieldBox("Password", txtRegisterPassword, lblRegisterPasswordError), 1, 1);
         grid.add(genderRow, 0, 2);
@@ -310,26 +321,37 @@ public class LoginView extends StackPane {
             showFieldError(txtPassword, lblPasswordError, "Please enter password");
             return;
         } else {
-            UserDAO userDao = new UserDAO();
-            User user = userDao.login(username, password);
+            AuthClient authClient = new AuthClient();
+            User user = authClient.login(username, password);
             if (user != null) {
                 System.out.println("Login successful! Welcome, " + user.getFullName());
                 handleAfterLogin(user);
+                PlayerSession.setCurrentUser(user);
             } else {
-                showFieldError(txtPassword, lblPasswordError, "Invalid username or password");
+                showFieldError(txtPassword, lblPasswordError,
+                        authClient.getLastError() == null ? "Invalid username or password" : authClient.getLastError());
                 return;
             }
         }
-        // System.out.println("Bat dau dang nhap...");
     }
 
     private void handleAfterLogin(User user) {
+        System.out.println("=== User Info ===");
+        System.out.println("Username: " + user.getUserName());
+        System.out.println("PlayerName: " + user.getPlayerName());
+        System.out.println("Avatar: " + user.getAvatar());
+        System.out.println("=================");
+        PlayerSession.setCurrentUser(user);
+
+        HomeView homeView = new HomeView(user.getPlayerName(), user.getAvatar());
+        GameClient gameClient = GameClient.getInstance();
+
+        gameClient.connect(user.getUserName());
+
         if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
-            getScene().setRoot(new ProfileDialog(user)); // truyền user
+            getScene().setRoot(new ProfileDialog(user));
         } else {
-            getScene().setRoot(new HomeView(
-                    user.getPlayerName(),
-                    user.getAvatar()));
+            getScene().setRoot(homeView);
         }
     }
 
@@ -387,7 +409,7 @@ public class LoginView extends StackPane {
             return;
         }
 
-        System.out.println("Bat dau dang ky tài khoản...");
+        System.out.println("Bat dau dang ky tai khoan...");
         User newUser = new User();
         newUser.setUsername(email);
         newUser.setPassword(password);
@@ -395,19 +417,17 @@ public class LoginView extends StackPane {
         newUser.setGender(rbMale.isSelected() ? "Male" : "Female");
         newUser.setDob(java.sql.Date.valueOf(birthDay));
 
-        UserDAO userDao = new UserDAO();
-        if (userDao.checkEmailExists(email)) {
-            showFieldError(txtEmail, lblEmailError, "Email already exists");
+        AuthClient authClient = new AuthClient();
+        if (!authClient.register(newUser)) {
+            showFieldError(txtEmail, lblEmailError,
+                    authClient.getLastError() == null ? "Registration failed. Try a different email."
+                            : authClient.getLastError());
             return;
         }
-        if (userDao.register(newUser)) {
-            System.out.println("Registration successful! You can now log in.");
-            showSuccessDialog();
-            showLoginPage();
-        } else {
-            showFieldError(txtEmail, lblEmailError, "Registration failed. Try a different email.");
 
-        }
+        System.out.println("Registration successful! You can now log in.");
+        showSuccessDialog();
+        showLoginPage();
     }
 
     private void openResetDialog() {
@@ -444,27 +464,25 @@ public class LoginView extends StackPane {
             String email = txtEmail.getText().trim();
             String pass = txtNewPass.getText().trim();
             String confirm = txtConfirm.getText().trim();
-            UserDAO dao = new UserDAO();
+            AuthClient authClient = new AuthClient();
 
             if (email.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
                 lblError.setText("Error: All fields are required.");
-                return;
-            }
-            if (!dao.checkEmailExists(email)) {
-                lblError.setText("Error: This email is not registered.");
                 return;
             }
             if (!pass.equals(confirm)) {
                 lblError.setText("Error: Passwords do not match.");
                 return;
             }
-
             if (!STRONG_PASSWORD_PATTERN.matcher(pass).matches()) {
                 lblError.setText("Password must be at least 8 chars, include letter, number, special char");
                 return;
             }
+            if (!authClient.resetPassword(email, pass)) {
+                lblError.setText(authClient.getLastError() == null ? "Reset failed." : authClient.getLastError());
+                return;
+            }
 
-            dao.updatePassword(email, pass);
             showSuccess("Success! Your password has been changed.");
             stage.close();
         });
