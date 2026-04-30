@@ -354,18 +354,32 @@ public class Room implements Runnable {
         if (p1Disconnected && !p2Disconnected && player2 != null) {
             String winnerName = getPlayerName(player2);
             int winnerScore = scores.getOrDefault(winnerName, 0);
+            int winnerGold = config.getWinGoldReward();
+
+            addGoldToPlayer(player2, winnerGold);
+
+            UserDAO userDao = new UserDAO();
+            int newGold = userDao.getUserGold(player2.getUsername());
 
             String result = "GAME_OVER|" + encode(winnerName) + "|" + winnerScore + "|0";
             player2.sendMessage(result);
-            player2.sendMessage("GAME_END|Đối thủ đã thoát game, bạn thắng!");
+            player2.sendMessage("GAME_END|Đối thủ đã thoát game, bạn thắng! +" + winnerGold + " vàng!");
+            player2.sendMessage("GOLD_UPDATE|" + winnerGold + "|" + newGold);
 
         } else if (!p1Disconnected && p2Disconnected && player1 != null) {
             String winnerName = getPlayerName(player1);
             int winnerScore = scores.getOrDefault(winnerName, 0);
+            int winnerGold = config.getWinGoldReward();
+
+            addGoldToPlayer(player1, winnerGold);
+
+            UserDAO userDao = new UserDAO();
+            int newGold = userDao.getUserGold(player1.getUsername());
 
             String result = "GAME_OVER|" + encode(winnerName) + "|" + winnerScore + "|0";
             player1.sendMessage(result);
-            player1.sendMessage("GAME_END|Đối thủ đã thoát game, bạn thắng!");
+            player1.sendMessage("GAME_END|Đối thủ đã thoát game, bạn thắng! +" + winnerGold + " vàng!");
+            player1.sendMessage("GOLD_UPDATE|" + winnerGold + "|" + newGold);
         }
     }
 
@@ -441,6 +455,50 @@ public class Room implements Runnable {
             player1.sendMessage(msg);
         if (player2 != null)
             player2.sendMessage(msg);
+    }
+
+    public synchronized void useFreezeSkill(ClientHandler user) {
+        ClientHandler opponent = (user == player1) ? player2 : player1;
+
+        if (opponent == null || opponent.isDisconnected()) {
+            user.sendMessage("SKILL_FAIL|Đối thủ không còn trong phòng");
+            return;
+        }
+
+        opponent.sendMessage("FREEZE_PLAYER|3");
+        user.sendMessage("SKILL_SUCCESS|Đã đóng băng đối thủ trong 3 giây");
+
+        System.out.println(getPlayerName(user) + " used FREEZE SKILL on " + getPlayerName(opponent));
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                opponent.sendMessage("UNFREEZE_PLAYER");
+            } catch (InterruptedException e) {
+            }
+        }).start();
+    }
+
+    public synchronized void useDarkSkill(ClientHandler user) {
+        ClientHandler opponent = (user == player1) ? player2 : player1;
+
+        if (opponent == null || opponent.isDisconnected()) {
+            user.sendMessage("SKILL_FAIL|Đối thủ không còn trong phòng");
+            return;
+        }
+
+        opponent.sendMessage("BLOCK_NUMBERS|3");
+        user.sendMessage("SKILL_SUCCESS|Đã che số đối thủ trong 3 giây");
+
+        System.out.println(getPlayerName(user) + " used DARK SKILL on " + getPlayerName(opponent));
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                opponent.sendMessage("UNBLOCK_NUMBERS");
+            } catch (InterruptedException e) {
+            }
+        }).start();
     }
 
     public Map<String, Integer> getScores() {

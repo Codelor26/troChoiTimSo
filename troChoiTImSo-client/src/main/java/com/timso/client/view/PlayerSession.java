@@ -1,10 +1,10 @@
 package com.timso.client.view;
 
+import com.timso.client.network.GameClient;
 import com.timso.common.model.User;
 
 public class PlayerSession {
 
-    private static int gold;
     private static int lightSkill;
     private static int darkSkill;
     private static int freezeSkill;
@@ -17,6 +17,8 @@ public class PlayerSession {
         if (user != null) {
             currentUsername = user.getUserName();
             currentGold = user.getGold();
+            System.out.println("PlayerSession initialized with gold: " + currentGold);
+
         }
     }
 
@@ -25,6 +27,14 @@ public class PlayerSession {
         if (currentUser != null) {
             currentUser.setGold(gold);
         }
+    }
+
+    public static void updateGold(int newGold) {
+        currentGold = newGold;
+        if (currentUser != null) {
+            currentUser.setGold(newGold);
+        }
+        System.out.println("Gold updated to: " + currentGold);
     }
 
     public static User getCurrentUser() {
@@ -55,27 +65,35 @@ public class PlayerSession {
     }
 
     public static boolean buyLightSkill() {
-        if (gold >= 200) {
-            gold -= 200;
+        System.out.println("Current gold: " + currentGold + ", Light skill price: 200");
+        if (currentGold >= 200) {
+            currentGold -= 200;
             lightSkill++;
+            GameClient.getInstance().sendToServer("BUY_SKILL|light|200");
             return true;
+        } else {
+            System.out.println("Not enough gold! Need 200, have " + currentGold);
+            return false;
         }
-        return false;
     }
 
     public static boolean buyDarkSkill() {
-        if (gold >= 300) {
-            gold -= 300;
+        System.out.println("Current gold: " + currentGold + ", Dark skill price: 300");
+        if (currentGold >= 300) {
+            currentGold -= 300;
             darkSkill++;
+            GameClient.getInstance().sendToServer("BUY_SKILL|dark|300");
             return true;
         }
         return false;
     }
 
     public static boolean buyFreezeSkill() {
-        if (gold >= 500) {
-            gold -= 500;
+        System.out.println("Current gold: " + currentGold + ", Freeze skill price: 500");
+        if (currentGold >= 500) {
+            currentGold -= 500;
             freezeSkill++;
+            GameClient.getInstance().sendToServer("BUY_SKILL|freeze|500");
             return true;
         }
         return false;

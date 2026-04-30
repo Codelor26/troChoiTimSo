@@ -59,14 +59,17 @@ public class GameView extends StackPane implements GameClient.GameListener {
     private Label lblLeftScore;
     private Label lblRightScore;
     private Timeline timerTimeline;
+    private StackPane gameOverOverlay;
+    private StackPane rematchOverlay;
+    private Label waitingLabel;
+    private StackPane blockOverlay;
+
     private int timeRemaining = 120;
     private int myScore = 0;
     private int opponentScore = 0;
-    private StackPane gameOverOverlay;
 
-    private StackPane rematchOverlay;
+    private boolean isFrozen = false;
     private boolean isWaitingForRematch = false;
-    private Label waitingLabel;
 
     private List<Integer> boardNumbers;
 
@@ -653,10 +656,14 @@ public class GameView extends StackPane implements GameClient.GameListener {
     private void applyDarkSkill() {
         if (!PlayerSession.useDarkSkill()) {
             refreshSkillPanel();
+            Toast.show(this, "❌ Bạn không có skill Che số!", 1500);
             return;
         }
         hideSkillPanel();
+        gameClient.sendToServer("USE_DARK_SKILL");
         System.out.println("Da dung skill che man hinh doi thu");
+        Toast.show(this, "Đã sử dụng skill Che số đối thủ!", 1500);
+        refreshSkillPanel();
     }
 
     private void applyFreezeSkill() {
@@ -665,6 +672,9 @@ public class GameView extends StackPane implements GameClient.GameListener {
             return;
         }
         hideSkillPanel();
+        gameClient.sendToServer("USE_FREEZE_SKILL");
+        Toast.show(this, "Đã sử dụng skill Đóng băng đối thủ!", 1500);
+        refreshSkillPanel();
         System.out.println("Da dung skill dong bang doi thu");
     }
 
@@ -1007,6 +1017,115 @@ public class GameView extends StackPane implements GameClient.GameListener {
                 delay.setOnFinished(e -> label.getStyleClass().remove("board-number-bonus"));
                 delay.play();
             }
+        });
+    }
+
+    @Override
+    public void onFreezePlayer(int duration) {
+        Platform.runLater(() -> {
+            isFrozen = true;
+            for (Label label : numberLabelMap.values()) {
+                label.setDisable(true);
+            }
+            Toast.show(this, "❄️ Bạn bị đóng băng trong " + duration + " giây!", 2000);
+
+            new Thread(() -> {
+                try {
+                    Thread.sleep(duration * 1000);
+                    isFrozen = false;
+                    for (Label label : numberLabelMap.values()) {
+                        if (!label.getStyleClass().contains("board-number-correct") &&
+                                !label.getStyleClass().contains("board-number-opponent")) {
+                            label.setDisable(false);
+                        }
+                    }
+                } catch (InterruptedException e) {
+                }
+            }).start();
+        });
+    }
+
+    @Override
+    public void onUnfreezePlayer() {
+        Platform.runLater(() -> {
+            isFrozen = false;
+            for (Label label : numberLabelMap.values()) {
+                if (!label.getStyleClass().contains("board-number-correct") &&
+                        !label.getStyleClass().contains("board-number-opponent")) {
+                    label.setDisable(false);
+                }
+            }
+            Toast.show(this, "❄️ Hết đóng băng! Bạn có thể chơi tiếp!", 1000);
+        });
+    }
+
+    @Override
+    public void onBlockNumbers(int duration) {
+        Platform.runLater(() -> {
+            for (Label label : numberLabelMap.values()) {
+                label.setVisible(false);
+            }
+
+            blockOverlay = new StackPane();
+            blockOverlay.setStyle("-fx-background-color: rgba(0,0,0,0.85);");
+            blockOverlay.setAlignment(Pos.CENTER);
+
+            VBox content = new VBox(15);
+            content.setAlignment(Pos.CENTER);
+
+            Label lblIcon = new Label("🔒");
+            lblIcon.setStyle("-fx-font-size: 60px;");
+
+            Label lblText = new Label("BỊ CHE SỐ!");
+            lblText.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+
+            Label lblDuration = new Label(duration + " giây");
+            lblDuration.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
+
+            content.getChildren().addAll(lblIcon, lblText, lblDuration);
+            blockOverlay.getChildren().add(content);
+
+            blockOverlay.setOnMouseClicked(e -> {
+            });
+
+            getChildren().add(blockOverlay);
+            Toast.show(this, "Đối thủ đã che số của bạn trong " + duration + " giây!", 2000);
+
+            // Sau 3 giây, server sẽ gửi UNBLOCK_NUMBERS
+        });
+    }
+
+    @Override
+    public void onUnblockNumbers() {
+        Platform.runLater(() -> {
+
+            if (blockOverlay != null) {
+                getChildren().remove(blockOverlay);
+                blockOverlay = null;
+            }
+            for (Map.Entry<Integer, Label> entry : numberLabelMap.entrySet()) {
+                Label label = entry.getValue();
+                if (!label.getStyleClass().contains("board-number-correct") &&
+                        !label.getStyleClass().contains("board-number-opponent")) {
+                    label.setVisible(true);
+                }
+            }
+            Toast.show(this, "🔓 Số đã được hiện lại!", 1000);
+        });
+    }
+
+    @Override
+    public void onVideoRewardSuccess(int rewardAmount, int newGold) {
+        Platform.runLater(() -> {
+            Toast.show(this, "🎬 Nhận " + rewardAmount + " vàng! Tổng: " + newGold, 2000);
+            PlayerSession.updateGold(newGold);
+        });
+    }
+
+    @Override
+    public void onVideoRewardFail(String message) {
+        Platform.runLater(() -> {
+            Toast.show(this, "❌ " + message, 2000);
         });
     }
 

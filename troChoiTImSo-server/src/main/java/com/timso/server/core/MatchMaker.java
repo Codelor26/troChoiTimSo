@@ -77,20 +77,21 @@ public class MatchMaker {
         }
     }
 
-    private static String getSafePlayerAvatar(ClientHandler player) {
-        String avatar = player.getPlayerAvatar();
-        return (avatar != null && !avatar.isEmpty()) ? avatar : "";
-    }
+    // private static String getSafePlayerAvatar(ClientHandler player) {
+    // String avatar = player.getPlayerAvatar();
+    // return (avatar != null && !avatar.isEmpty()) ? avatar : "";
+    // }
 
     private static boolean isPlayerValid(ClientHandler player) {
         return player != null && !player.isDisconnected();
     }
 
-    private static String getSafePlayerName(ClientHandler player) {
-        String name = player.getPlayername();
-        System.out.println("getSafePlayerName for " + player.getUsername() + " = '" + name + "'");
-        return name;
-    }
+    // private static String getSafePlayerName(ClientHandler player) {
+    // String name = player.getPlayername();
+    // System.out.println("getSafePlayerName for " + player.getUsername() + " = '" +
+    // name + "'");
+    // return name;
+    // }
 
     private static String encode(String value) {
         if (value == null) {

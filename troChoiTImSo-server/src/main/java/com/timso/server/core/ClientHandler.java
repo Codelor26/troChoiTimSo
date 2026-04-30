@@ -109,17 +109,75 @@ public class ClientHandler implements Runnable {
                     if (otherPlayer != null && !otherPlayer.isDisconnected()) {
                         String winnerName = otherPlayer.getPlayername();
                         int winnerScore = room.getScores().getOrDefault(winnerName, 0);
+                        int winnerGold = 100;
 
-                        String result = "GAME_OVER|" + encode(winnerName) + "|" + winnerScore + "|0";
-                        otherPlayer.sendMessage(result);
-                        otherPlayer.sendMessage("GAME_END|Đối thủ đã rời game, bạn thắng!");
+                        UserDAO userDao = new UserDAO();
+                        boolean success = userDao.addGold(otherPlayer.getUsername(), winnerGold);
 
-                        System.out.println("Player " + getPlayername() + " left the game. " + winnerName + " wins!");
+                        if (success) {
+                            int newGold = userDao.getUserGold(otherPlayer.getUsername());
+                            String result = "GAME_OVER|" + encode(winnerName) + "|" + winnerScore + "|0";
+                            otherPlayer.sendMessage(result);
+                            otherPlayer
+                                    .sendMessage("GAME_END|Đối thủ đã rời game, bạn thắng! +" + winnerGold + " vàng!");
+                            otherPlayer.sendMessage("GOLD_UPDATE|" + winnerGold + "|" + newGold);
+
+                            System.out.println("Player " + getPlayername() + " left. " + winnerName + " wins! +"
+                                    + winnerGold + " gold");
+                        } else {
+                            String result = "GAME_OVER|" + encode(winnerName) + "|" + winnerScore + "|0";
+                            otherPlayer.sendMessage(result);
+                            otherPlayer.sendMessage("GAME_END|Đối thủ đã rời game, bạn thắng!");
+                        }
+
                     }
 
                     room = null;
                 }
                 sendMessage("LEAVE_OK");
+            }
+            case "USE_FREEZE_SKILL" -> {
+                if (room != null) {
+                    room.useFreezeSkill(this);
+                }
+                break;
+            }
+
+            case "USE_DARK_SKILL" -> {
+                if (room != null) {
+                    room.useDarkSkill(this);
+                }
+                break;
+            }
+
+            case "BUY_SKILL" -> {
+                if (tokens.length >= 3) {
+                    String skillType = tokens[1];
+                    int price = Integer.parseInt(tokens[2]);
+                    // Cập nhật database, trừ vàng
+                    UserDAO userDao = new UserDAO();
+                    boolean success = userDao.deductGold(username, price);
+                    if (success) {
+                        sendMessage("BUY_SKILL_SUCCESS|" + skillType);
+                    } else {
+                        sendMessage("BUY_SKILL_FAIL|Không đủ vàng");
+                    }
+                }
+                break;
+            }
+
+            case "CLAIM_VIDEO_REWARD" -> {
+                int rewardAmount = 1000;
+                UserDAO userDao = new UserDAO();
+                boolean success = userDao.addGold(username, rewardAmount);
+
+                if (success) {
+                    int newGold = userDao.getUserGold(username);
+                    sendMessage("VIDEO_REWARD_SUCCESS|" + rewardAmount + "|" + newGold);
+                    System.out.println("User " + username + " claimed video reward: +" + rewardAmount + " gold");
+                } else {
+                    sendMessage("VIDEO_REWARD_FAIL|Không thể cộng vàng");
+                }
             }
 
             default -> sendError("Lệnh không hỗ trợ: " + command);
@@ -368,22 +426,6 @@ public class ClientHandler implements Runnable {
             writer.println(builder);
             writer.println("<END>");
         }
-    }
-
-    private String serializeUser(User user) {
-        String playerName = user.getPlayerName() == null ? "" : user.getPlayerName();
-        String avatar = user.getAvatar() == null ? "" : user.getAvatar();
-        String dob = user.getDob() == null ? "" : user.getDob().toString();
-
-        return String.join("|",
-                String.valueOf(user.getID()),
-                user.getUserName(),
-                user.getFullName(),
-                user.getGender(),
-                dob,
-                String.valueOf(user.getGold()),
-                avatar,
-                playerName);
     }
 
     private static String encode(String value) {

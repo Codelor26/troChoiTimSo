@@ -158,6 +158,10 @@ public class HomeView extends StackPane {
 
             @Override
             public void onGoldUpdate(int goldAdded, int newGold) {
+                Platform.runLater(() -> {
+                    PlayerSession.updateGold(newGold);
+                });
+
             }
 
             @Override
@@ -204,6 +208,29 @@ public class HomeView extends StackPane {
             public void onLuckyBonus(String playerName, int number, String bonus) {
             }
 
+            @Override
+            public void onFreezePlayer(int duration) {
+            }
+
+            @Override
+            public void onUnfreezePlayer() {
+            }
+
+            @Override
+            public void onBlockNumbers(int duration) {
+            }
+
+            @Override
+            public void onUnblockNumbers() {
+            }
+
+            @Override
+            public void onVideoRewardSuccess(int rewardAmount, int newGold) {
+            }
+
+            @Override
+            public void onVideoRewardFail(String message) {
+            }
         });
 
     }

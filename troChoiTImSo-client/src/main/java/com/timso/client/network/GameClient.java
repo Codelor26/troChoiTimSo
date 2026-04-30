@@ -208,6 +208,36 @@ public class GameClient {
                 String bonus = parts[3];
                 listener.onLuckyBonus(playerName, number, bonus);
                 break;
+
+            case "FREEZE_PLAYER":
+                int freezeDuration = Integer.parseInt(parts[1]);
+                listener.onFreezePlayer(freezeDuration);
+                break;
+
+            case "UNFREEZE_PLAYER":
+                listener.onUnfreezePlayer();
+                break;
+
+            case "BLOCK_NUMBERS":
+                int blockDuration = Integer.parseInt(parts[1]);
+                listener.onBlockNumbers(blockDuration);
+                break;
+
+            case "UNBLOCK_NUMBERS":
+                listener.onUnblockNumbers();
+                break;
+
+            case "VIDEO_REWARD_SUCCESS":
+                if (parts.length >= 3) {
+                    int rewardAmount = Integer.parseInt(parts[1]);
+                    int newGold = Integer.parseInt(parts[2]);
+                    listener.onVideoRewardSuccess(rewardAmount, newGold);
+                }
+                break;
+
+            case "VIDEO_REWARD_FAIL":
+                listener.onVideoRewardFail(parts[1]);
+                break;
         }
     }
 
@@ -347,6 +377,17 @@ public class GameClient {
 
         void onLuckyBonus(String playerName, int number, String bonus);
 
+        void onFreezePlayer(int duration);
+
+        void onUnfreezePlayer();
+
+        void onBlockNumbers(int duration);
+
+        void onUnblockNumbers();
+
+        void onVideoRewardSuccess(int rewardAmount, int newGold);
+
+        void onVideoRewardFail(String message);
     }
 
 }
