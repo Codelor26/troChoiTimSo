@@ -827,6 +827,8 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onCorrect(String playerName, int number, int score) {
+        SoundManager.playSound("correct.mp3");
+
         Platform.runLater(() -> {
             updateScore(playerName, score);
             Label label = numberLabelMap.get(number);
@@ -847,6 +849,8 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onWrong(int number) {
+        SoundManager.playSound("wrong.mp3");
+
         Platform.runLater(() -> {
             Label label = numberLabelMap.get(number);
             if (label != null) {

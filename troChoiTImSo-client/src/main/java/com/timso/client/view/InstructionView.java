@@ -59,6 +59,7 @@ public class InstructionView extends StackPane {
         Button btnStart = new Button(lang.getString("instruction.button.start"));
         btnStart.getStyleClass().addAll("action-button", "rules-start-button");
         btnStart.setOnAction(e -> {
+            hideOverlay();
             if (onStartAction != null) {
                 onStartAction.run();
             }

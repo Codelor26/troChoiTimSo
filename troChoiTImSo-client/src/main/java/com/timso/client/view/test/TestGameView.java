@@ -10,7 +10,6 @@ public class TestGameView extends Application {
     @Override
     public void start(Stage stage) {
         try {
-            // ⚠️ QUAN TRỌNG: truyền đúng path ảnh
             GameView view = new GameView(
                     "Player 1",
                     "E:\\laptrinhungdungmang\\troChoiTImSo\\src\\main\\resources\\icon\\Diversity-Avatars-Avatars-Charlie-chaplin.512.png" // <--
@@ -23,7 +22,6 @@ public class TestGameView extends Application {
 
             Scene scene = new Scene(view, 900, 600);
 
-            // load CSS (nếu có)
             var css = getClass().getResource("/css/style.css");
             if (css != null) {
                 scene.getStylesheets().add(css.toExternalForm());
@@ -36,7 +34,7 @@ public class TestGameView extends Application {
             stage.show();
 
         } catch (Exception e) {
-            e.printStackTrace(); // in lỗi cho dễ debug
+            e.printStackTrace();
         }
     }
 

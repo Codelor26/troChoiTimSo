@@ -28,6 +28,14 @@ public class Setting extends StackPane {
     private String currentPlayerName;
     private String currentAvatarPath;
     private String currentUsername;
+    private String tempLanguage;
+    private String tempPlayerName;
+    private String tempAvatarPath;
+    private boolean tempMusicEnabled;
+    private boolean tempEffectEnabled;
+
+    private boolean musicEnabled = true;
+    private boolean effectEnabled = true;
 
     private final TextField txtPlayerName = new TextField();
     private final ComboBox<String> cboLanguage = new ComboBox<>();
@@ -123,8 +131,23 @@ public class Setting extends StackPane {
     private VBox buildSoundSection(LanguageManager lang) {
         VBox box = createSectionBox(lang.getString("setting.sound"));
 
-        updateToggleText(btnMusic, true);
-        updateToggleText(btnEffect, true);
+        musicEnabled = SoundManager.isMusicEnabled();
+        effectEnabled = SoundManager.isEffectEnabled();
+
+        updateToggleText(btnMusic, musicEnabled);
+        updateToggleText(btnEffect, effectEnabled);
+
+        btnMusic.setOnAction(e -> {
+            boolean isSelected = btnMusic.isSelected();
+            updateToggleText(btnMusic, isSelected);
+            SoundManager.setMusicEnabled(isSelected);
+        });
+
+        btnEffect.setOnAction(e -> {
+            boolean isSelected = btnEffect.isSelected();
+            updateToggleText(btnEffect, isSelected);
+            SoundManager.setEffectEnabled(isSelected);
+        });
 
         btnMusic.getStyleClass().add("setting-toggle-button");
         btnEffect.getStyleClass().add("setting-toggle-button");
@@ -132,8 +155,30 @@ public class Setting extends StackPane {
         btnMusic.setSelected(true);
         btnEffect.setSelected(true);
 
-        btnMusic.setOnAction(e -> updateToggleText(btnMusic, btnMusic.isSelected()));
-        btnEffect.setOnAction(e -> updateToggleText(btnEffect, btnEffect.isSelected()));
+        // tempMusicEnabled = SoundManager.isMusicEnabled();
+        // tempEffectEnabled = SoundManager.isEffectEnabled();
+
+        // updateToggleText(btnMusic, tempMusicEnabled);
+        // updateToggleText(btnEffect, tempEffectEnabled);
+
+        // btnMusic.setSelected(musicEnabled);
+        // btnEffect.setSelected(effectEnabled);
+
+        // btnMusic.setSelected(tempMusicEnabled);
+        // btnEffect.setSelected(tempEffectEnabled);
+
+        // btnMusic.getStyleClass().add("setting-toggle-button");
+        // btnEffect.getStyleClass().add("setting-toggle-button");
+
+        // btnMusic.setOnAction(e -> {
+        // tempMusicEnabled = btnMusic.isSelected();
+        // updateToggleText(btnMusic, tempMusicEnabled);
+        // });
+
+        // btnEffect.setOnAction(e -> {
+        // tempEffectEnabled = btnEffect.isSelected();
+        // updateToggleText(btnEffect, tempEffectEnabled);
+        // });
 
         HBox musicRow = new HBox(18, createSectionLabel(lang.getString("setting.music")), btnMusic);
         musicRow.setAlignment(Pos.CENTER_LEFT);
@@ -148,11 +193,13 @@ public class Setting extends StackPane {
     private VBox buildProfileSection(LanguageManager lang) {
         VBox box = createSectionBox(lang.getString("setting.profile"));
 
+        tempAvatarPath = currentAvatarPath;
+
         txtPlayerName.setText(currentPlayerName);
         txtPlayerName.setPromptText(lang.getString("setting.name.prompt"));
         txtPlayerName.getStyleClass().addAll("input-field", "setting-name-field");
 
-        avatarPreview.setImage(loadImage(currentAvatarPath));
+        avatarPreview.setImage(loadImage(tempAvatarPath));
         avatarPreview.setFitWidth(56);
         avatarPreview.setFitHeight(56);
         avatarPreview.setPreserveRatio(true);
@@ -208,22 +255,17 @@ public class Setting extends StackPane {
         cboLanguage.getItems().addAll("Tiếng Việt", "English");
 
         String savedLang = lang.getCurrentLang();
-        cboLanguage.setValue("vi".equals(savedLang) ? "Tiếng Việt" : "English");
+        String currentDisplay = "vi".equals(savedLang) ? "Tiếng Việt" : "English";
+        cboLanguage.setValue(currentDisplay);
+        tempLanguage = savedLang;
         cboLanguage.getStyleClass().add("setting-combo-box");
 
         cboLanguage.setOnAction(e -> {
             String selected = cboLanguage.getValue();
             if (selected == null)
                 return;
-            String newLang = selected.equals("Tiếng Việt") ? "vi" : "en";
-            if (!lang.getCurrentLang().equals(newLang)) {
-                lang.setLocale(newLang);
-                if (getScene() != null) {
-                    getScene().setRoot(new Setting(currentPlayerName, currentAvatarPath, currentUsername));
-                }
-            }
+            tempLanguage = selected.equals("Tiếng Việt") ? "vi" : "en";
         });
-
         HBox row = new HBox(18, createSectionLabel(lang.getString("setting.language.choose")), cboLanguage);
         row.setAlignment(Pos.CENTER_LEFT);
 
@@ -273,7 +315,7 @@ public class Setting extends StackPane {
         button.getStyleClass().add("setting-avatar-button");
 
         button.setOnAction(e -> {
-            currentAvatarPath = avatarPath;
+            tempAvatarPath = avatarPath;
             avatarPreview.setImage(loadImage(avatarPath));
             hideError();
         });
@@ -300,13 +342,20 @@ public class Setting extends StackPane {
             return;
         }
 
+        if (tempLanguage != null && !tempLanguage.equals(lang.getCurrentLang())) {
+            lang.setLocale(tempLanguage);
+        }
+
+        // SoundManager.setMusicEnabled(tempMusicEnabled);
+        // SoundManager.setEffectEnabled(tempEffectEnabled);
+
         String usernameToUse = (currentUsername != null && !currentUsername.isEmpty())
                 ? currentUsername
                 : (PlayerSession.getCurrentUser() != null ? PlayerSession.getCurrentUser().getUserName() : "");
 
         if (!usernameToUse.isEmpty()) {
             AuthClient authClient = new AuthClient();
-            if (!authClient.updateProfile(usernameToUse, newName, currentAvatarPath)) {
+            if (!authClient.updateProfile(usernameToUse, newName, tempAvatarPath)) {
                 showError(authClient.getLastError() == null
                         ? lang.getString("setting.err.save.fail")
                         : authClient.getLastError());
@@ -314,11 +363,13 @@ public class Setting extends StackPane {
             }
             if (PlayerSession.getCurrentUser() != null) {
                 PlayerSession.getCurrentUser().setPlayerName(newName);
-                PlayerSession.getCurrentUser().setAvatar(currentAvatarPath);
+                PlayerSession.getCurrentUser().setAvatar(tempAvatarPath);
             }
         }
 
         currentPlayerName = newName;
+        currentAvatarPath = tempAvatarPath;
+
         hideError();
         backHome();
     }

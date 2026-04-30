@@ -233,6 +233,8 @@ public class HomeView extends StackPane {
             }
         });
 
+        SoundManager.playBackgroundMusic();
+
     }
 
     private void showFindingMatchUI() {
@@ -448,8 +450,8 @@ public class HomeView extends StackPane {
 
         panel.setPrefHeight(220);
         panel.setMaxHeight(220);
-
         panel.getStyleClass().add("player-info-panel");
+
         Label title = new Label(lang.getString("home.player.info"));
         title.getStyleClass().add("player-info-title");
 
@@ -583,6 +585,10 @@ public class HomeView extends StackPane {
     private void openGameView() {
         if (getScene() != null) {
             // getScene().setRoot(new GameView(playerName, avatarPath));
+            if (gameClient.isConnected()) {
+                gameClient.findMatch();
+                showFindingMatchUI();
+            }
         }
     }
 

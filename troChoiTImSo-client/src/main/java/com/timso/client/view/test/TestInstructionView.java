@@ -13,7 +13,7 @@ public class TestInstructionView extends Application {
                 () -> System.out.println("Closed"),
                 () -> System.out.println("Start game"));
 
-        view.showOverlay(); // bat buoc
+        view.showOverlay();
 
         Scene scene = new Scene(view, 800, 600);
 

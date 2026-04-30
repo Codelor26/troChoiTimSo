@@ -12,6 +12,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(new LoginView(), 1280, 620);
         primaryStage.setScene(scene);
         primaryStage.show();
+
     }
 
     public static void main(String[] args) {

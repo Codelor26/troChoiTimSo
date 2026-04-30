@@ -45,12 +45,14 @@ public class Skill extends StackPane implements GameClient.GameListener {
     }
 
     private Node buildContent() {
+        LanguageManager lang = LanguageManager.getInstance();
+
         StackPane root = new StackPane();
         root.getStyleClass().add("skill-root");
 
         VBox content = new VBox(20);
         content.setAlignment(Pos.TOP_CENTER);
-        content.setPadding(new Insets(18, 26, 24, 26));
+        content.setPadding(new Insets(60, 26, 24, 26));
 
         HBox topBar = new HBox();
         topBar.setAlignment(Pos.CENTER);
@@ -60,7 +62,8 @@ public class Skill extends StackPane implements GameClient.GameListener {
         HBox.setHgrow(leftSpacer, javafx.scene.layout.Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, javafx.scene.layout.Priority.ALWAYS);
 
-        Label title = new Label("Power");
+        // Label title = new Label("Power");
+        Label title = new Label(lang.getString("skill.title"));
         title.getStyleClass().add("skill-title");
 
         HBox goldBox = new HBox(6);
@@ -157,7 +160,7 @@ public class Skill extends StackPane implements GameClient.GameListener {
         topBar.setAlignment(Pos.TOP_RIGHT);
         topBar.getChildren().add(btnClose);
 
-        VBox videoBox = new VBox(14, mediaView, lblWatching);
+        VBox videoBox = new VBox(14, topBar, mediaView, lblWatching);
         videoBox.setAlignment(Pos.CENTER);
         videoBox.getStyleClass().add("reward-video-box");
 
