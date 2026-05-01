@@ -1137,3 +1137,26 @@
 .leaderboard-row:even .rank-text {
     -fx-text-fill: #cccccc;
 }
+
+.search-field {
+    -fx-background-color: #0f3460;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #888888;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-padding: 8 15 8 15;
+}
+
+.search-button {
+    -fx-background-color: #ff6b6b;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-background-radius: 25;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-cursor: hand;
+}
+
+.search-button:hover {
+    -fx-background-color: #ff8e8e;
+}

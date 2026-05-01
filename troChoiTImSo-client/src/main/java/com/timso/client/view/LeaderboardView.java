@@ -1,5 +1,6 @@
 package com.timso.client.view;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +28,9 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
     private VBox content;
     private Label lblMyRank;
     private VBox listContainer;
+    private ScrollPane scrollPane;
+    private TextField searchField;
+    private Button btnSearch;
 
     private List<Map<String, Object>> tempLeaderboard = new ArrayList<>();
 
@@ -49,11 +54,12 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
     }
 
     private Node buildContent() {
+        LanguageManager lang = LanguageManager.getInstance();
         BorderPane root = new BorderPane();
         root.getStyleClass().add("leaderboard-root");
 
         HBox header = new HBox();
-        header.setAlignment(Pos.CENTER_LEFT);
+        header.setAlignment(Pos.CENTER);
         header.setPadding(new Insets(16, 24, 16, 24));
         header.getStyleClass().add("home-header");
 
@@ -66,14 +72,34 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
             }
         });
 
-        Label title = new Label("Bảng xếp hạng");
+        Region leftSpacer = new Region();
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+
+        Label title = new Label("");
         title.getStyleClass().add("leaderboard-title");
-        title.setFont(Font.font(24));
+        title.setFont(Font.font(28));
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region rightSpacer = new Region();
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        header.getChildren().addAll(btnBack, spacer, title);
+        HBox searchBox = new HBox(10);
+        searchBox.setAlignment(Pos.CENTER_RIGHT);
+
+        searchField = new TextField();
+        searchField.setPromptText(lang.getString("boardView.search"));
+        searchField.setPrefWidth(180);
+        searchField.getStyleClass().add("search-field");
+
+        btnSearch = new Button("🔍");
+        btnSearch.getStyleClass().add("search-button");
+        btnSearch.setOnAction(e -> searchPlayer());
+        searchField.setOnAction(e -> searchPlayer());
+
+        searchBox.getChildren().addAll(searchField, btnSearch);
+
+        header.getChildren().addAll(btnBack, leftSpacer, title, rightSpacer,
+                searchBox);
+        // header.getChildren().addAll(btnBack, leftSpacer, title, searchBox);
 
         content = new VBox(15);
         content.setAlignment(Pos.TOP_CENTER);
@@ -83,7 +109,7 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
         myRankBox.setAlignment(Pos.CENTER);
         myRankBox.getStyleClass().add("leaderboard-my-rank");
 
-        Label lblMyRankTitle = new Label("Thứ hạng của bạn");
+        Label lblMyRankTitle = new Label(lang.getString("boardView.rank"));
         lblMyRankTitle.getStyleClass().add("leaderboard-my-rank-title");
 
         lblMyRank = new Label("--");
@@ -96,7 +122,12 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
         tableHeader.setPadding(new Insets(10));
         tableHeader.getStyleClass().add("leaderboard-header");
 
-        String[] headers = { "Hạng", "Người chơi", "Số trận", "Thắng", "Thua", "Hòa", "Điểm", "Tỷ lệ" };
+        String[] headers = { lang.getString("boardView.rate"), lang.getString("boardView.user"),
+                lang.getString("boardView.match"),
+                lang.getString("boardView.win"),
+                lang.getString("boardView.lose"), lang.getString("boardView.draw"),
+                lang.getString("boardView.point"),
+                lang.getString("boardView.ratio") };
         int[] widths = { 50, 250, 60, 60, 60, 60, 70, 70 };
 
         for (int i = 0; i < headers.length; i++) {
@@ -108,7 +139,7 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
         }
 
         listContainer = new VBox(5);
-        ScrollPane scrollPane = new ScrollPane(listContainer);
+        scrollPane = new ScrollPane(listContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(400);
         scrollPane.getStyleClass().add("leaderboard-scroll");
@@ -205,15 +236,16 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
     }
 
     public void finishLeaderboard() {
+        LanguageManager lang = LanguageManager.getInstance();
         System.out.println("Finishing leaderboard, total players: " + tempLeaderboard.size());
         Platform.runLater(() -> {
             listContainer.getChildren().clear();
 
             if (tempLeaderboard.isEmpty()) {
-                Label noData = new Label("Chưa có dữ liệu");
+                Label noData = new Label(lang.getString("boardView.no.data"));
                 noData.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
                 listContainer.getChildren().add(noData);
-                lblMyRank.setText("Chưa có dữ liệu");
+                lblMyRank.setText(lang.getString("boardView.no.data"));
                 return;
             }
 
@@ -243,7 +275,7 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
             if (userRank > 0) {
                 lblMyRank.setText("#" + userRank);
             } else {
-                lblMyRank.setText("Chưa có dữ liệu");
+                lblMyRank.setText(lang.getString("boardView.no.data"));
             }
 
             tempLeaderboard.clear();
@@ -251,12 +283,53 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
     }
 
     public void onLeaderboardEmpty() {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             listContainer.getChildren().clear();
-            Label noData = new Label("Chưa có dữ liệu");
+            Label noData = new Label(lang.getString("boardView.no.data"));
             noData.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
             listContainer.getChildren().add(noData);
         });
+    }
+
+    private void searchPlayer() {
+        LanguageManager lang = LanguageManager.getInstance();
+        String keyword = searchField.getText().trim().toLowerCase();
+        if (keyword.isEmpty()) {
+            refreshLeaderboard();
+            return;
+        }
+
+        for (Node node : listContainer.getChildren()) {
+            if (node instanceof HBox) {
+                HBox row = (HBox) node;
+                for (Node child : row.getChildren()) {
+                    if (child instanceof HBox) {
+                        HBox playerBox = (HBox) child;
+                        for (Node inner : playerBox.getChildren()) {
+                            if (inner instanceof Label) {
+                                Label nameLabel = (Label) inner;
+                                if (nameLabel.getText().toLowerCase().contains(keyword)) {
+                                    scrollPane.setVvalue(row.getLayoutY() / listContainer.getHeight());
+                                    row.setStyle("-fx-background-color: #ff6b6b; -fx-background-radius: 8;");
+                                    PauseTransition delay = new PauseTransition(Duration.seconds(3));
+                                    delay.setOnFinished(e -> row.setStyle(""));
+                                    delay.play();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Toast.show(this, lang.getString("boardView.no.player") + ": " + keyword, 2000);
+    }
+
+    private void refreshLeaderboard() {
+        tempLeaderboard.clear();
+        gameClient.sendToServer("GET_LEADERBOARD");
     }
 
     @Override
@@ -379,9 +452,10 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
 
     @Override
     public void onMyRank(int rank) {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             if (rank == 0) {
-                lblMyRank.setText("Chưa có dữ liệu");
+                lblMyRank.setText(lang.getString("boardView.no.data"));
             } else {
                 lblMyRank.setText("#" + rank);
             }
