@@ -14,6 +14,8 @@ import com.timso.client.controller.*;
 import com.timso.client.view.GameView;
 import com.timso.client.view.PlayerSession;
 
+import javafx.application.Platform;
+
 public class GameClient {
     private static GameClient instance;
     private Socket socket;
@@ -279,9 +281,14 @@ public class GameClient {
                             PlayerSession.setFreezeSkill(newCount);
                             break;
                     }
-                    if (listener instanceof GameView) {
-                        ((GameView) listener).refreshSkillPanel();
-                    }
+                    // if (listener instanceof GameView) {
+                    // ((GameView) listener).refreshSkillPanel();
+                    // }
+                    Platform.runLater(() -> {
+                        if (listener instanceof GameView) {
+                            ((GameView) listener).refreshSkillPanel();
+                        }
+                    });
                 }
                 break;
         }

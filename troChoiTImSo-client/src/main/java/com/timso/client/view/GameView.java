@@ -685,7 +685,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
     public void applyDarkSkill() {
         LanguageManager lang = LanguageManager.getInstance();
         if (!PlayerSession.useDarkSkill()) {
-            refreshSkillPanel();
+            // refreshSkillPanel();
             Toast.show(this, lang.getString("gameview.noskill.hidenumber"), 1500);
             return;
         }
@@ -695,7 +695,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
         System.out.println("Da dung skill che man hinh doi thu");
         Toast.show(this, lang.getString("gameview.use.hidenumber"), 1500);
-        refreshSkillPanel();
+        // refreshSkillPanel();
     }
 
     private void applyFreezeSkill() {
@@ -724,10 +724,18 @@ public class GameView extends StackPane implements GameClient.GameListener {
         skillOverlay.setManaged(false);
     }
 
+    // public void refreshSkillPanel() {
+    // skillOverlay.getChildren().clear();
+    // skillPanel = buildSkillPanel();
+    // skillOverlay.getChildren().add(skillPanel);
+    // }
+
     public void refreshSkillPanel() {
-        skillOverlay.getChildren().clear();
-        skillPanel = buildSkillPanel();
-        skillOverlay.getChildren().add(skillPanel);
+        Platform.runLater(() -> {
+            skillOverlay.getChildren().clear();
+            skillPanel = buildSkillPanel();
+            skillOverlay.getChildren().add(skillPanel);
+        });
     }
 
     private List<Point2D> generateRandomPositions(int total, double boardWidth, double boardHeight) {
@@ -1130,8 +1138,17 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
         SoundManager.playSound("block_effect.mp3");
         Platform.runLater(() -> {
-            for (Label label : numberLabelMap.values()) {
-                label.setVisible(false);
+            // for (Label label : numberLabelMap.values()) {
+            // label.setVisible(false);
+            // }
+
+            for (Map.Entry<Integer, Label> entry : numberLabelMap.entrySet()) {
+                Label label = entry.getValue();
+                if (!label.getStyleClass().contains("board-number-correct") &&
+                        !label.getStyleClass().contains("board-number-opponent")) {
+                    label.setUserData(label.isVisible());
+                    label.setVisible(false);
+                }
             }
 
             blockOverlay = new StackPane();
@@ -1179,6 +1196,8 @@ public class GameView extends StackPane implements GameClient.GameListener {
                 Label label = entry.getValue();
                 if (!label.getStyleClass().contains("board-number-correct") &&
                         !label.getStyleClass().contains("board-number-opponent")) {
+                    label.setVisible(true);
+                } else {
                     label.setVisible(true);
                 }
             }
