@@ -348,6 +348,14 @@ public class GameClient {
                     ((LeaderboardView) listener).onLeaderboardEmpty();
                 }
                 break;
+
+            case "STATS_RESPONSE":
+                if (parts.length >= 3) {
+                    int online = Integer.parseInt(parts[1]);
+                    int total = Integer.parseInt(parts[2]);
+                    listener.onStatsResponse(online, total);
+                }
+                break;
         }
     }
 
@@ -504,6 +512,8 @@ public class GameClient {
         void onLeaderboard(String data);
 
         void onMyRank(int rank);
+
+        void onStatsResponse(int onlineCount, int totalUsers);
     }
 
 }

@@ -347,9 +347,10 @@ public class LoginView extends StackPane {
         PlayerSession.setCurrentUser(user);
 
         HomeView homeView = new HomeView(user.getPlayerName(), user.getAvatar());
-        GameClient gameClient = GameClient.getInstance();
+        // GameClient gameClient = GameClient.getInstance();
 
-        gameClient.connect(user.getUserName());
+        // gameClient.connect(user.getUserName());
+        GameClient.getInstance().connect(user.getUserName());
 
         if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
             getScene().setRoot(new ProfileDialog(user));

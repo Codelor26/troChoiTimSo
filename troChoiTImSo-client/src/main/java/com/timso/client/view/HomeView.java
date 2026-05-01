@@ -247,6 +247,10 @@ public class HomeView extends StackPane {
             @Override
             public void onMyRank(int rank) {
             }
+
+            @Override
+            public void onStatsResponse(int onlineCount, int totalUsers) {
+            }
         });
 
         SoundManager.playBackgroundMusic();

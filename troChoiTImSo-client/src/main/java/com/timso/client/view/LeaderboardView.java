@@ -462,6 +462,10 @@ public class LeaderboardView extends StackPane implements GameClient.GameListene
         });
     }
 
+    @Override
+    public void onStatsResponse(int onlineCount, int totalUsers) {
+    }
+
     private String decode(String value) {
         try {
             return new String(java.util.Base64.getDecoder().decode(value), java.nio.charset.StandardCharsets.UTF_8);

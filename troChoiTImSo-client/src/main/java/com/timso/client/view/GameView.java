@@ -724,12 +724,6 @@ public class GameView extends StackPane implements GameClient.GameListener {
         skillOverlay.setManaged(false);
     }
 
-    // public void refreshSkillPanel() {
-    // skillOverlay.getChildren().clear();
-    // skillPanel = buildSkillPanel();
-    // skillOverlay.getChildren().add(skillPanel);
-    // }
-
     public void refreshSkillPanel() {
         Platform.runLater(() -> {
             skillOverlay.getChildren().clear();
@@ -1258,6 +1252,10 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onMyRank(int rank) {
+    }
+
+    @Override
+    public void onStatsResponse(int onlineCount, int totalUsers) {
     }
 
     public void showOverlay() {

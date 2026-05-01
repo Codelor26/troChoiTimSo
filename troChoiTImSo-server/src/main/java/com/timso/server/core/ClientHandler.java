@@ -14,9 +14,14 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientHandler implements Runnable {
@@ -29,6 +34,29 @@ public class ClientHandler implements Runnable {
 
     private String playerName;
     private String playerAvatar;
+
+    private static final Set<String> onlineUsers = Collections.synchronizedSet(new HashSet<>());
+    private static int totalRegisteredUsers = 0;
+    private long lastHeartbeat = System.currentTimeMillis();
+
+    static {
+        updateTotalUsers();
+
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(30000);
+                    System.out.println("=== SERVER STATS ===");
+                    System.out.println("Total registered users: " + totalRegisteredUsers);
+                    System.out.println("Currently online: " + onlineUsers.size());
+                    System.out.println("Online users: " + onlineUsers);
+                    System.out.println("==================");
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }).start();
+    }
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
@@ -43,6 +71,8 @@ public class ClientHandler implements Runnable {
 
             String messageFromClient;
             while (running.get() && (messageFromClient = reader.readLine()) != null) {
+                lastHeartbeat = System.currentTimeMillis();
+
                 messageFromClient = messageFromClient.trim();
                 if (messageFromClient.isEmpty()) {
                     continue;
@@ -54,16 +84,31 @@ public class ClientHandler implements Runnable {
                 }
 
                 processCommand(messageFromClient);
+
+                Timer heartbeatTimer = new Timer(true);
+                heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (System.currentTimeMillis() - lastHeartbeat > 60000) {
+                            disconnectClient("Heartbeat timeout");
+                        }
+                    }
+                }, 60000, 30000);
             }
         } catch (SocketException e) {
             if (running.get()) {
                 System.out.println("SocketException for " + clientInfo + ": " + e.getMessage());
+                running.set(false);
             }
         } catch (IOException e) {
             if (running.get()) {
                 System.err.println("IOException for " + clientInfo + ": " + e.getMessage());
             }
         } finally {
+            if (username != null) {
+                onlineUsers.remove(username);
+                System.out.println("User offline: " + username + " (Total online: " + onlineUsers.size() + ")");
+            }
             closeResources();
             System.out.println("Client handler stopped for " + clientInfo + ".");
         }
@@ -247,6 +292,11 @@ public class ClientHandler implements Runnable {
                 }
             }
 
+            case "GET_STATS" -> {
+                sendMessage("STATS_RESPONSE|" + onlineUsers.size() + "|" + totalRegisteredUsers);
+                System.out.println("Sent stats: online=" + onlineUsers.size() + ", total=" + totalRegisteredUsers);
+            }
+
             default -> sendError("Lệnh không hỗ trợ: " + command);
         }
     }
@@ -284,6 +334,9 @@ public class ClientHandler implements Runnable {
             return;
         String username = decode(tokens[1]);
         this.username = username;
+
+        onlineUsers.add(username);
+        System.out.println("User online (PLAYER_INFO): " + username + " (Total online: " + onlineUsers.size() + ")");
 
         UserDAO userDao = new UserDAO();
         User user = userDao.getUserByUsername(username);
@@ -370,6 +423,8 @@ public class ClientHandler implements Runnable {
                 playerName);
         System.out.println("Sending login response - playerName: '" + playerName + "'");
 
+        onlineUsers.add(username);
+        System.out.println("User online: " + username + " (Total online: " + onlineUsers.size() + ")");
     }
 
     public String getName() {
@@ -512,6 +567,20 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    public static void updateTotalUsers() {
+        UserDAO userDao = new UserDAO();
+        totalRegisteredUsers = userDao.getTotalUserCount();
+        System.out.println("Total registered users: " + totalRegisteredUsers);
+    }
+
+    public static int getOnlineUserCount() {
+        return onlineUsers.size();
+    }
+
+    public static Set<String> getOnlineUsers() {
+        return new HashSet<>(onlineUsers);
+    }
+
     private void sendError(String message) {
         if (writer != null) {
             writer.println("ERROR|" + encode(message));
@@ -548,6 +617,11 @@ public class ClientHandler implements Runnable {
             room.checkPlayerDisconnected();
             room = null;
         }
+        if (username != null) {
+            onlineUsers.remove(username);
+            System.out.println("User offline: " + username + " (Total online: " + onlineUsers.size() + ")");
+
+        }
         try {
             if (reader != null) {
                 reader.close();
@@ -563,6 +637,22 @@ public class ClientHandler implements Runnable {
                 clientSocket.close();
             }
         } catch (IOException ignored) {
+        }
+    }
+
+    private void disconnectClient(String reason) {
+        System.out.println("Disconnecting client: " + username + " - Reason: " + reason);
+        running.set(false);
+        try {
+            if (writer != null) {
+                writer.println("DISCONNECT|" + reason);
+                writer.flush();
+            }
+            if (clientSocket != null && !clientSocket.isClosed()) {
+                clientSocket.close();
+            }
+        } catch (IOException e) {
+            System.out.println("Error during disconnect: " + e.getMessage());
         }
     }
 

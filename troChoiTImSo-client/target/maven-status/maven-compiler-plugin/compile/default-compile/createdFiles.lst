@@ -1,3 +1,4 @@
+com\timso\client\view\Skill$BuyAction.class
 com\timso\client\view\test\TestInstructionView.class
 com\timso\client\view\Toast.class
 com\timso\client\view\Setting.class
@@ -10,12 +11,16 @@ com\timso\client\view\EditProfileDialog$1.class
 com\timso\client\controller\GameController.class
 com\timso\client\network\AuthClient.class
 com\timso\client\network\ClientSocket.class
+com\timso\client\view\SoundManager.class
 com\timso\client\view\InstructionView.class
 com\timso\client\view\HomeView.class
 com\timso\client\MainApp.class
 com\timso\client\view\GameView.class
 com\timso\client\view\test\TestGameView.class
+com\timso\client\view\Skill$CountSupplier.class
+com\timso\client\view\LeaderboardView.class
 com\timso\client\view\LoginView.class
 com\timso\client\view\LoginView$1.class
 com\timso\client\network\GameClient$GameListener.class
 com\timso\client\view\LanguageManager.class
+com\timso\client\view\Skill.class

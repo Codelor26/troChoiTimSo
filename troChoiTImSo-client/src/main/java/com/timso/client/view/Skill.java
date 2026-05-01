@@ -495,4 +495,8 @@ public class Skill extends StackPane implements GameClient.GameListener {
         // Không cần xử lý ở Skill
     }
 
+    @Override
+    public void onStatsResponse(int onlineCount, int totalUsers) {
+    }
+
 }
