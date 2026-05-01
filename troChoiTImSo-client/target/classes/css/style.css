@@ -958,8 +958,8 @@
 /* Game Over Dialog */
 .game-over-dialog {
     -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
-    -fx-background-radius: 20;
-    -fx-border-radius: 20;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
     -fx-border-color: linear-gradient(to bottom right, #ff6b6b, #ee5a24);
     -fx-border-width: 3;
     -fx-padding: 30 40 30 40;

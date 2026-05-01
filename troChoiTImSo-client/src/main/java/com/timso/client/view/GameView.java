@@ -97,6 +97,9 @@ public class GameView extends StackPane implements GameClient.GameListener {
         gameClient = GameClient.getInstance();
         gameClient.setListener(this);
         System.out.println("GameView listener set, ready to receive BOARD_NUMBERS");
+        System.out.println("Current skills in GameView - Light: " + PlayerSession.getLightSkill() +
+                ", Dark: " + PlayerSession.getDarkSkill() +
+                ", Freeze: " + PlayerSession.getFreezeSkill());
 
     }
 
@@ -338,6 +341,8 @@ public class GameView extends StackPane implements GameClient.GameListener {
     }
 
     private void showGameOverUI(String winner, int yourScore, int opponentScore) {
+        LanguageManager lang = LanguageManager.getInstance();
+
         System.out.println("=== GAME_OVER RECEIVED ===");
         System.out.println("Winner: " + winner);
         System.out.println("Your score: " + yourScore);
@@ -360,16 +365,24 @@ public class GameView extends StackPane implements GameClient.GameListener {
             String iconEmoji;
 
             if ("DRAW".equals(winner)) {
-                titleText = "HÒA!";
-                iconEmoji = "🤝";
+                titleText = lang.getString("gameview.draw");
+                iconEmoji = "🤝"; // thay hinh anh
             } else if (winner.equals(this.playerName)) {
-                titleText = "CHIẾN THẮNG!";
+                titleText = lang.getString("gameview.win");
                 iconEmoji = "🏆";
                 if (!isWaitingForRematch)
                     showConfetti();
             } else {
-                titleText = "THẤT BẠI!";
+                titleText = lang.getString("gameview.lose");
                 iconEmoji = "💔";
+            }
+
+            if (winner.equals(this.playerName)) {
+                SoundManager.playSound("win.mp3");
+            } else if ("DRAW".equals(winner)) {
+                SoundManager.playSound("draw.mp3");
+            } else {
+                SoundManager.playSound("lose.mp3");
             }
 
             Label lblIcon = new Label(iconEmoji);
@@ -381,8 +394,9 @@ public class GameView extends StackPane implements GameClient.GameListener {
             HBox scoreBox = new HBox(30);
             scoreBox.setAlignment(Pos.CENTER);
 
-            VBox yourScoreBox = createScoreBox("BẠN", yourScore, winner.equals(this.playerName));
-            VBox opponentScoreBox = createScoreBox("ĐỐI THỦ", opponentScore,
+            VBox yourScoreBox = createScoreBox(lang.getString("gameview.you"), yourScore,
+                    winner.equals(this.playerName));
+            VBox opponentScoreBox = createScoreBox(lang.getString("gameview.opponent"), opponentScore,
                     !winner.equals(this.playerName) && !"DRAW".equals(winner));
 
             Label lblVS = new Label("VS");
@@ -390,7 +404,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
             scoreBox.getChildren().addAll(yourScoreBox, lblVS, opponentScoreBox);
 
-            Button btnRequestRematch = new Button("🔄 ĐỀ NGHỊ CHƠI LẠI 🔄");
+            Button btnRequestRematch = new Button("🔄 " + lang.getString("gameview.offer") + " 🔄");
             btnRequestRematch.getStyleClass().add("game-over-button");
             btnRequestRematch.setOnAction(e -> {
                 gameClient.requestRematch();
@@ -398,7 +412,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
                 removeGameOverOverlay();
             });
 
-            Button btnBackHome = new Button("🏠 VỀ TRANG CHỦ 🏠");
+            Button btnBackHome = new Button("🏠 " + lang.getString("gameview.backhome") + " 🏠");
             btnBackHome.getStyleClass().add("game-over-button");
             btnBackHome.setStyle("-fx-background-color: linear-gradient(to bottom, #4a5568, #2d3748);");
             btnBackHome.setOnAction(e -> {
@@ -413,7 +427,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
             dialog.getChildren().addAll(lblIcon, lblTitle, scoreBox, buttonBox);
             if (winner.equals(this.playerName)) {
-                Label lblGoldReward = new Label("+100 Vàng!");
+                Label lblGoldReward = new Label(lang.getString("gameview.plus.gold"));
                 lblGoldReward.setStyle("-fx-font-size: 20px; -fx-text-fill: #FFD700; -fx-font-weight: bold;");
                 dialog.getChildren().add(3, lblGoldReward);
             }
@@ -432,6 +446,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
     }
 
     private void showWaitingForRematchDialog() {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             rematchOverlay = new StackPane();
             rematchOverlay.setStyle("-fx-background-color: rgba(0,0,0,0.85);");
@@ -444,17 +459,19 @@ public class GameView extends StackPane implements GameClient.GameListener {
             Label lblIcon = new Label("⏳");
             lblIcon.setStyle("-fx-font-size: 60px;");
 
-            Label lblTitle = new Label("CHỜ ĐỐI THỦ ĐỒNG Ý...");
+            Label lblTitle = new Label(lang.getString("gameview.waitfor.opponent"));
             lblTitle.getStyleClass().add("game-over-title");
             lblTitle.setStyle("-fx-font-size: 28px;");
 
-            Label lblWaiting = new Label("Đang chờ " + opponentName + " đồng ý chơi lại");
+            Label lblWaiting = new Label(
+                    lang.getString("gameview.waiting") + " " + opponentName + " "
+                            + lang.getString("gameview.agree.play.again"));
             lblWaiting.setStyle("-fx-font-size: 18px; -fx-text-fill: #cccccc;");
 
             javafx.scene.control.ProgressIndicator progress = new javafx.scene.control.ProgressIndicator();
             progress.setMaxSize(50, 50);
 
-            Button btnCancel = new Button("❌ HỦY YÊU CẦU ❌");
+            Button btnCancel = new Button("❌ " + lang.getString("gameview.cancer.request") + " ❌");
             btnCancel.getStyleClass().add("game-over-button");
             btnCancel.setStyle("-fx-background-color: linear-gradient(to bottom, #ff6b6b, #ee5a24);");
             btnCancel.setOnAction(e -> {
@@ -565,13 +582,16 @@ public class GameView extends StackPane implements GameClient.GameListener {
     }
 
     private VBox buildSkillPanel() {
+        LanguageManager lang = LanguageManager.getInstance();
+
         VBox panel = new VBox(12);
         panel.setPrefWidth(380);
         panel.setMaxWidth(380);
+        panel.setMaxHeight(200);
         panel.getStyleClass().add("player-info-panel");
         panel.setAlignment(Pos.TOP_CENTER);
 
-        Label title = new Label("Kỹ năng");
+        Label title = new Label(lang.getString("skill.title"));
         title.getStyleClass().add("player-info-title");
 
         Button btnClose = new Button("X");
@@ -585,29 +605,35 @@ public class GameView extends StackPane implements GameClient.GameListener {
         VBox list = new VBox(10);
         list.setAlignment(Pos.CENTER_LEFT);
 
-        if (PlayerSession.getLightSkill() > 0) {
+        int lightCount = PlayerSession.getLightSkill();
+        int darkCount = PlayerSession.getDarkSkill();
+        int freezeCount = PlayerSession.getFreezeSkill();
+        System.out.println(
+                "Building skill panel - Light: " + lightCount + ", Dark: " + darkCount + ", Freeze: " + freezeCount);
+
+        if (lightCount > 0) {
             list.getChildren().add(createSkillRow(
-                    "Làm sáng số đúng",
-                    PlayerSession.getLightSkill(),
+                    lang.getString("skill.light"),
+                    lightCount,
                     this::applyLightSkill));
         }
 
-        if (PlayerSession.getDarkSkill() > 0) {
+        if (darkCount > 0) {
             list.getChildren().add(createSkillRow(
-                    "Che màn hình đối thủ",
-                    PlayerSession.getDarkSkill(),
+                    lang.getString("skill.dark"),
+                    darkCount,
                     this::applyDarkSkill));
         }
 
-        if (PlayerSession.getFreezeSkill() > 0) {
+        if (freezeCount > 0) {
             list.getChildren().add(createSkillRow(
-                    "Đóng băng đối thủ",
-                    PlayerSession.getFreezeSkill(),
+                    lang.getString("skill.freeze"),
+                    freezeCount,
                     this::applyFreezeSkill));
         }
 
         if (list.getChildren().isEmpty()) {
-            Label empty = new Label("Bạn chưa mua kỹ năng nào");
+            Label empty = new Label(lang.getString("skill.noSkill"));
             empty.getStyleClass().add("player-info-text");
             list.getChildren().add(empty);
         }
@@ -617,13 +643,15 @@ public class GameView extends StackPane implements GameClient.GameListener {
     }
 
     private HBox createSkillRow(String name, int count, Runnable action) {
+        LanguageManager lang = LanguageManager.getInstance();
+
         Label lblName = new Label(name);
         lblName.getStyleClass().add("player-info-text");
 
         Label lblCount = new Label("x" + count);
         lblCount.getStyleClass().add("player-info-text");
 
-        Button btnUse = new Button("Dùng");
+        Button btnUse = new Button(lang.getString("skill.use"));
         btnUse.getStyleClass().add("profile-action-button");
         btnUse.setOnAction(e -> action.run());
 
@@ -642,6 +670,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
         }
 
         hideSkillPanel();
+        SoundManager.playSound("use_light_skill.mp3");
 
         Label targetLabel = numberLabelMap.get(currentTarget);
         if (targetLabel == null)
@@ -653,27 +682,32 @@ public class GameView extends StackPane implements GameClient.GameListener {
         pause.play();
     }
 
-    private void applyDarkSkill() {
+    public void applyDarkSkill() {
+        LanguageManager lang = LanguageManager.getInstance();
         if (!PlayerSession.useDarkSkill()) {
             refreshSkillPanel();
-            Toast.show(this, "❌ Bạn không có skill Che số!", 1500);
+            Toast.show(this, lang.getString("gameview.noskill.hidenumber"), 1500);
             return;
         }
         hideSkillPanel();
+        SoundManager.playSound("use_dark_skill.mp3");
         gameClient.sendToServer("USE_DARK_SKILL");
+
         System.out.println("Da dung skill che man hinh doi thu");
-        Toast.show(this, "Đã sử dụng skill Che số đối thủ!", 1500);
+        Toast.show(this, lang.getString("gameview.use.hidenumber"), 1500);
         refreshSkillPanel();
     }
 
     private void applyFreezeSkill() {
+        LanguageManager lang = LanguageManager.getInstance();
         if (!PlayerSession.useFreezeSkill()) {
             refreshSkillPanel();
             return;
         }
         hideSkillPanel();
+        SoundManager.playSound("use_freeze_skill.mp3");
         gameClient.sendToServer("USE_FREEZE_SKILL");
-        Toast.show(this, "Đã sử dụng skill Đóng băng đối thủ!", 1500);
+        Toast.show(this, lang.getString("gameview.use.freeze"), 1500);
         refreshSkillPanel();
         System.out.println("Da dung skill dong bang doi thu");
     }
@@ -690,7 +724,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
         skillOverlay.setManaged(false);
     }
 
-    private void refreshSkillPanel() {
+    public void refreshSkillPanel() {
         skillOverlay.getChildren().clear();
         skillPanel = buildSkillPanel();
         skillOverlay.getChildren().add(skillPanel);
@@ -768,8 +802,11 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onGoldUpdate(int goldAdded, int newGold) {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
-            Toast.show(this, "🏆 +" + goldAdded + " vàng! Tổng: " + newGold, 2000);
+            Toast.show(this,
+                    goldAdded + lang.getString("gameview.gold") + lang.getString("gameview.total") + ": " + newGold,
+                    2000);
             PlayerSession.setGold(newGold);
         });
     }
@@ -797,10 +834,11 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onRematchRejected(String rejecter) {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             removeRematchOverlay();
             removeGameOverOverlay();
-            Toast.show(this, "❌ " + rejecter + " đã từ chối chơi lại", 2000);
+            Toast.show(this, "❌ " + rejecter + lang.getString("gameview.refused"), 2000);
 
             PauseTransition delay = new PauseTransition(Duration.seconds(2));
             delay.setOnFinished(e -> {
@@ -814,10 +852,11 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onRematchCancelled() {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             removeRematchOverlay();
             removeGameOverOverlay();
-            Toast.show(this, "Đã hủy yêu cầu chơi lại", 2000);
+            Toast.show(this, lang.getString("gameview.cancel"), 2000);
 
             if (getScene() != null) {
                 getScene().setRoot(new HomeView(playerName, avatarPath));
@@ -920,20 +959,22 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onRematchAccepted() {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             removeRematchOverlay();
             removeGameOverOverlay();
 
             resetGame();
-            Toast.show(this, "🎉 Cả 2 đã đồng ý! Bắt đầu game mới...", 2000);
+            Toast.show(this, "🎉" + lang.getString("gameview.both.agree"), 2000);
         });
     }
 
     @Override
     public void onRematchTimeout() {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             removeRematchOverlay();
-            Toast.show(this, "⏰ Hết thời gian chờ đối thủ", 2000);
+            Toast.show(this, "⏰ " + lang.getString("gameview.timeup"), 2000);
             showGameOverUI("DRAW", myScore, opponentScore);
         });
     }
@@ -947,6 +988,7 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onRematchRequest(String requester) {
+        LanguageManager lang = LanguageManager.getInstance();
         System.out.println("=== REMATCH REQUEST RECEIVED in GameView from: " + requester + " ===");
 
         Platform.runLater(() -> {
@@ -955,17 +997,17 @@ public class GameView extends StackPane implements GameClient.GameListener {
             }
 
             Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmDialog.setTitle("Đề nghị chơi lại");
-            confirmDialog.setHeaderText(requester + " muốn chơi lại!");
-            confirmDialog.setContentText("Bạn có đồng ý chơi lại không?");
+            confirmDialog.setTitle(lang.getString("gameview.recommend.play.again"));
+            confirmDialog.setHeaderText(requester + lang.getString("gameview.wantto.playagain"));
+            confirmDialog.setContentText(lang.getString("gameview.would.you.like.playagain"));
 
             DialogPane dialogPane = confirmDialog.getDialogPane();
             dialogPane.getStylesheets().add(
                     Objects.requireNonNull(getClass().getResource("/css/style.css")).toExternalForm());
             dialogPane.getStyleClass().add("custom-dialog");
 
-            ButtonType yesButton = new ButtonType("Đồng ý", ButtonBar.ButtonData.YES);
-            ButtonType noButton = new ButtonType("Từ chối", ButtonBar.ButtonData.NO);
+            ButtonType yesButton = new ButtonType(lang.getString("gameview.agree"), ButtonBar.ButtonData.YES);
+            ButtonType noButton = new ButtonType(lang.getString("gameview.disagree"), ButtonBar.ButtonData.NO);
             confirmDialog.getButtonTypes().setAll(yesButton, noButton);
 
             Optional<ButtonType> result = confirmDialog.showAndWait();
@@ -982,9 +1024,14 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onLuckyEvent(int luckyNumber, int duration) {
+        LanguageManager lang = LanguageManager.getInstance();
+
         Platform.runLater(() -> {
             Toast.show(this,
-                    "🎲 SỐ MAY MẮN: " + luckyNumber + "! Bấm ngay trong " + duration + " giây để nhân đôi điểm! 🎲",
+                    "🎲 " + lang.getString("gameview.lucky.number") + luckyNumber + "! "
+                            + lang.getString("gameview.click.now")
+                            + " " + duration
+                            + lang.getString("gameview.double.points") + " 🎲",
                     3000);
 
             Label luckyLabel = numberLabelMap.get(luckyNumber);
@@ -1002,16 +1049,22 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onLuckyEventEnd() {
+        LanguageManager lang = LanguageManager.getInstance();
+
         Platform.runLater(() -> {
-            Toast.show(this, "⏰ Hết giờ tìm số may mắn! Quay lại tìm số target!", 1500);
+            Toast.show(this, "⏰ " + lang.getString("gameview.timeup.lucky.number"), 1500);
         });
     }
 
     @Override
     public void onLuckyBonus(String playerName, int number, String bonus) {
+        LanguageManager lang = LanguageManager.getInstance();
+
+        SoundManager.playSound("lucky.mp3");
+
         Platform.runLater(() -> {
-            Toast.show(this, "🎉 " + playerName + " tìm được số may mắn " + number + "! "
-                    + bonus + " điểm thưởng! 🎉",
+            Toast.show(this, "🎉 " + playerName + lang.getString("gameview.found.lucky.number") + number + "! "
+                    + bonus + lang.getString("gameview.bonus.points") + " 🎉",
                     2000);
 
             Label label = numberLabelMap.get(number);
@@ -1026,12 +1079,17 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onFreezePlayer(int duration) {
+        LanguageManager lang = LanguageManager.getInstance();
+
+        SoundManager.playSound("freeze_effect.mp3");
+
         Platform.runLater(() -> {
             isFrozen = true;
             for (Label label : numberLabelMap.values()) {
                 label.setDisable(true);
             }
-            Toast.show(this, "❄️ Bạn bị đóng băng trong " + duration + " giây!", 2000);
+            Toast.show(this,
+                    "❄️ " + lang.getString("gameview.frozen.in") + duration + lang.getString("gameview.second"), 2000);
 
             new Thread(() -> {
                 try {
@@ -1051,6 +1109,9 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onUnfreezePlayer() {
+        LanguageManager lang = LanguageManager.getInstance();
+
+        SoundManager.playSound("unfreeze.mp3");
         Platform.runLater(() -> {
             isFrozen = false;
             for (Label label : numberLabelMap.values()) {
@@ -1059,12 +1120,15 @@ public class GameView extends StackPane implements GameClient.GameListener {
                     label.setDisable(false);
                 }
             }
-            Toast.show(this, "❄️ Hết đóng băng! Bạn có thể chơi tiếp!", 1000);
+            Toast.show(this, "❄️ " + lang.getString("gameview.frozen.continue"), 1000);
         });
     }
 
     @Override
     public void onBlockNumbers(int duration) {
+        LanguageManager lang = LanguageManager.getInstance();
+
+        SoundManager.playSound("block_effect.mp3");
         Platform.runLater(() -> {
             for (Label label : numberLabelMap.values()) {
                 label.setVisible(false);
@@ -1080,10 +1144,10 @@ public class GameView extends StackPane implements GameClient.GameListener {
             Label lblIcon = new Label("🔒");
             lblIcon.setStyle("-fx-font-size: 60px;");
 
-            Label lblText = new Label("BỊ CHE SỐ!");
+            Label lblText = new Label(lang.getString("gameview.number.hidden"));
             lblText.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
 
-            Label lblDuration = new Label(duration + " giây");
+            Label lblDuration = new Label(duration + lang.getString("gameview.second"));
             lblDuration.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
 
             content.getChildren().addAll(lblIcon, lblText, lblDuration);
@@ -1093,7 +1157,8 @@ public class GameView extends StackPane implements GameClient.GameListener {
             });
 
             getChildren().add(blockOverlay);
-            Toast.show(this, "Đối thủ đã che số của bạn trong " + duration + " giây!", 2000);
+            Toast.show(this, lang.getString("gameview.oppent.number.hidden") + " " + duration
+                    + lang.getString("gameview.second"), 2000);
 
             // Sau 3 giây, server sẽ gửi UNBLOCK_NUMBERS
         });
@@ -1101,6 +1166,9 @@ public class GameView extends StackPane implements GameClient.GameListener {
 
     @Override
     public void onUnblockNumbers() {
+        LanguageManager lang = LanguageManager.getInstance();
+
+        SoundManager.playSound("unblock.mp3");
         Platform.runLater(() -> {
 
             if (blockOverlay != null) {
@@ -1114,14 +1182,19 @@ public class GameView extends StackPane implements GameClient.GameListener {
                     label.setVisible(true);
                 }
             }
-            Toast.show(this, "🔓 Số đã được hiện lại!", 1000);
+            Toast.show(this, "🔓 " + lang.getString("gameview.number.displayed"), 1000);
         });
     }
 
     @Override
     public void onVideoRewardSuccess(int rewardAmount, int newGold) {
+        LanguageManager lang = LanguageManager.getInstance();
+
         Platform.runLater(() -> {
-            Toast.show(this, "🎬 Nhận " + rewardAmount + " vàng! Tổng: " + newGold, 2000);
+            Toast.show(this,
+                    "🎬 " + lang.getString("gameview.receive") + rewardAmount + lang.getString("gameview.gold") + "!"
+                            + lang.getString("gameview.total") + ": " + newGold,
+                    2000);
             PlayerSession.updateGold(newGold);
         });
     }
@@ -1130,6 +1203,33 @@ public class GameView extends StackPane implements GameClient.GameListener {
     public void onVideoRewardFail(String message) {
         Platform.runLater(() -> {
             Toast.show(this, "❌ " + message, 2000);
+        });
+    }
+
+    @Override
+    public void onBuySkillSuccess(String skillType, int newCount, int newGold) {
+        LanguageManager lang = LanguageManager.getInstance();
+
+        Platform.runLater(() -> {
+            PlayerSession.updateGold(newGold);
+
+            switch (skillType) {
+                case "light":
+                    PlayerSession.setLightSkill(newCount);
+                    break;
+                case "dark":
+                    PlayerSession.setDarkSkill(newCount);
+                    break;
+                case "freeze":
+                    PlayerSession.setFreezeSkill(newCount);
+                    break;
+            }
+
+            refreshSkillPanel();
+
+            Toast.show(this,
+                    lang.getString("gameview.buy") + " " + skillType + lang.getString("gameview.skill.success") + " ",
+                    2000);
         });
     }
 

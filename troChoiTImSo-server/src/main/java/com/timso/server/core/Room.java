@@ -501,6 +501,11 @@ public class Room implements Runnable {
         }).start();
     }
 
+    public synchronized void useLightSkill(ClientHandler user) {
+        user.sendMessage("SKILL_SUCCESS|Đã sử dụng skill Làm sáng số đúng!");
+        System.out.println(getPlayerName(user) + " used LIGHT SKILL");
+    }
+
     public Map<String, Integer> getScores() {
         return new HashMap<>(scores);
     }

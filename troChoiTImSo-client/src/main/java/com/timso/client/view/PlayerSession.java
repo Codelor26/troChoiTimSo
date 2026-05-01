@@ -122,4 +122,19 @@ public class PlayerSession {
         }
         return false;
     }
+
+    public static void setLightSkill(int count) {
+        lightSkill = count;
+        System.out.println("Light skill set to: " + lightSkill);
+    }
+
+    public static void setDarkSkill(int count) {
+        darkSkill = count;
+        System.out.println("Dark skill set to: " + darkSkill);
+    }
+
+    public static void setFreezeSkill(int count) {
+        freezeSkill = count;
+        System.out.println("Freeze skill set to: " + freezeSkill);
+    }
 }

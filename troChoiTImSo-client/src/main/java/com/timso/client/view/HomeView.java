@@ -60,9 +60,10 @@ public class HomeView extends StackPane {
         gameClient.setListener(new GameClient.GameListener() {
             @Override
             public void onWaiting() {
+                LanguageManager lang = LanguageManager.getInstance();
                 Platform.runLater(() -> {
                     if (waitingLabel != null) {
-                        waitingLabel.setText("Đang tìm đối thủ...");
+                        waitingLabel.setText(lang.getString("gameview.found.oppent"));
                     }
                 });
             }
@@ -73,21 +74,22 @@ public class HomeView extends StackPane {
 
             @Override
             public void onRematchRequest(String requester) {
+                LanguageManager lang = LanguageManager.getInstance();
                 Platform.runLater(() -> {
                     Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-                    confirmDialog.setTitle("Đề nghị chơi lại");
-                    confirmDialog.setHeaderText(requester + " muốn chơi lại!");
-                    confirmDialog.setContentText("Bạn có đồng ý chơi lại không?");
+                    confirmDialog.setTitle(lang.getString("gameview.offer"));
+                    confirmDialog.setHeaderText(requester + " " + lang.getString("gameview.wantto.playagain"));
+                    confirmDialog.setContentText(lang.getString("gameview.would.you.like.playagain"));
 
-                    ButtonType yesButton = new ButtonType("Đồng ý", ButtonBar.ButtonData.YES);
-                    ButtonType noButton = new ButtonType("Từ chối", ButtonBar.ButtonData.NO);
+                    ButtonType yesButton = new ButtonType(lang.getString("gameview.agree"), ButtonBar.ButtonData.YES);
+                    ButtonType noButton = new ButtonType(lang.getString("gameview.disagree"), ButtonBar.ButtonData.NO);
                     confirmDialog.getButtonTypes().setAll(yesButton, noButton);
 
                     Optional<ButtonType> result = confirmDialog.showAndWait();
                     if (result.isPresent() && result.get() == yesButton) {
-                        gameClient.requestRematch(); // Gửi đồng ý
+                        gameClient.requestRematch();
                     } else {
-                        gameClient.sendToServer("REJECT_REMATCH"); // Gửi từ chối
+                        gameClient.sendToServer("REJECT_REMATCH");
                     }
                 });
             }
@@ -176,8 +178,9 @@ public class HomeView extends StackPane {
 
             @Override
             public void onRematchRejected(String rejecter) {
+                LanguageManager lang = LanguageManager.getInstance();
                 Platform.runLater(() -> {
-                    Toast.show(HomeView.this, "❌ " + rejecter + " đã từ chối chơi lại", 2000);
+                    Toast.show(HomeView.this, "❌ " + rejecter + " " + lang.getString("gameview.refused"), 2000);
 
                     if (getScene() != null) {
                         getScene().setRoot(new HomeView(playerName, avatarPath));
@@ -187,8 +190,9 @@ public class HomeView extends StackPane {
 
             @Override
             public void onRematchCancelled() {
+                LanguageManager lang = LanguageManager.getInstance();
                 Platform.runLater(() -> {
-                    Toast.show(HomeView.this, "Đã hủy yêu cầu chơi lại", 2000);
+                    Toast.show(HomeView.this, lang.getString("gameview.cancel"), 2000);
 
                     if (getScene() != null) {
                         getScene().setRoot(new HomeView(playerName, avatarPath));
@@ -231,6 +235,10 @@ public class HomeView extends StackPane {
             @Override
             public void onVideoRewardFail(String message) {
             }
+
+            @Override
+            public void onBuySkillSuccess(String skillType, int newCount, int newGold) {
+            }
         });
 
         SoundManager.playBackgroundMusic();
@@ -238,6 +246,7 @@ public class HomeView extends StackPane {
     }
 
     private void showFindingMatchUI() {
+        LanguageManager lang = LanguageManager.getInstance();
         if (findingMatchOverlay == null) {
             findingMatchOverlay = new StackPane();
             findingMatchOverlay.getStyleClass().add("overlay-pane");
@@ -245,10 +254,10 @@ public class HomeView extends StackPane {
             VBox box = new VBox(15);
             box.setAlignment(Pos.CENTER);
 
-            waitingLabel = new Label("Đang tìm trận: 0s");
+            waitingLabel = new Label(lang.getString("gameview.match") + ": 0s");
             waitingLabel.getStyleClass().add("finding-text");
 
-            Button btnCancel = new Button("Hủy");
+            Button btnCancel = new Button(lang.getString("edit.btn.cancel"));
             btnCancel.setOnAction(e -> cancelFindingMatch());
 
             box.getChildren().addAll(waitingLabel, btnCancel);
@@ -262,6 +271,7 @@ public class HomeView extends StackPane {
     }
 
     private void startFindingTimer() {
+        LanguageManager lang = LanguageManager.getInstance();
         seconds = 0;
 
         if (timeline != null) {
@@ -272,7 +282,7 @@ public class HomeView extends StackPane {
                 new KeyFrame(Duration.seconds(1), e -> {
                     seconds++;
                     if (waitingLabel != null) {
-                        waitingLabel.setText("Đang tìm trận: " + seconds + "s");
+                        waitingLabel.setText(lang.getString("gameview.match") + " " + seconds + "s");
                     }
                 }));
 
@@ -395,11 +405,12 @@ public class HomeView extends StackPane {
     }
 
     private void showConnectionError() {
+        LanguageManager lang = LanguageManager.getInstance();
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                 javafx.scene.control.Alert.AlertType.ERROR);
-        alert.setTitle("Lỗi kết nối");
+        alert.setTitle(lang.getString("home.connect.error"));
         alert.setHeaderText(null);
-        alert.setContentText("Không thể kết nối đến server. Vui lòng đăng nhập lại.");
+        alert.setContentText(lang.getString("home.unable.connect"));
         alert.showAndWait();
     }
 

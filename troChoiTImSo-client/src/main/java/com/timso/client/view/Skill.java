@@ -62,7 +62,6 @@ public class Skill extends StackPane implements GameClient.GameListener {
         HBox.setHgrow(leftSpacer, javafx.scene.layout.Priority.ALWAYS);
         HBox.setHgrow(rightSpacer, javafx.scene.layout.Priority.ALWAYS);
 
-        // Label title = new Label("Power");
         Label title = new Label(lang.getString("skill.title"));
         title.getStyleClass().add("skill-title");
 
@@ -192,12 +191,13 @@ public class Skill extends StackPane implements GameClient.GameListener {
     }
 
     private void closeVideo(boolean reward) {
+        LanguageManager lang = LanguageManager.getInstance();
         rewardOverlay.setVisible(false);
         rewardOverlay.setManaged(false);
         rewardOverlay.getChildren().clear();
 
         if (!reward) {
-            showMessage("Bạn đã tắt video, không nhận thưởng!");
+            showMessage(lang.getString("skill.video.off"));
         }
     }
 
@@ -345,11 +345,36 @@ public class Skill extends StackPane implements GameClient.GameListener {
     }
 
     @Override
+    public void onBuySkillSuccess(String skillType, int newCount, int newGold) {
+        Platform.runLater(() -> {
+            PlayerSession.updateGold(newGold);
+
+            switch (skillType) {
+                case "light":
+                    PlayerSession.setLightSkill(newCount);
+                    break;
+                case "dark":
+                    PlayerSession.setDarkSkill(newCount);
+                    break;
+                case "freeze":
+                    PlayerSession.setFreezeSkill(newCount);
+                    break;
+            }
+
+            refreshView();
+            LanguageManager lang = LanguageManager.getInstance();
+            showMessage(lang.getString("skill.buy.success") + " +1 " + skillType + " skill");
+        });
+    }
+
+    @Override
     public void onVideoRewardSuccess(int rewardAmount, int newGold) {
+        LanguageManager lang = LanguageManager.getInstance();
         Platform.runLater(() -> {
             PlayerSession.updateGold(newGold);
             refreshView();
-            showMessage("🎉 Nhận " + rewardAmount + " vàng! Tổng: " + newGold);
+            showMessage("🎉 " + lang.getString("gameview.receive") + rewardAmount + "  " + lang.getString("home.gold")
+                    + lang.getString("gameview.total") + ": " + newGold);
         });
     }
 

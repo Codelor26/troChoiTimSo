@@ -41,6 +41,7 @@ import com.timso.client.network.GameClient;
 import com.timso.common.model.User;
 
 public class LoginView extends StackPane {
+    LanguageManager lang = LanguageManager.getInstance();
 
     private static final Pattern FULLNAME_PATTERN = Pattern.compile("^[\\p{L}\\s]+$");
     private static final Pattern GMAIL_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z0-9._%+-]*@gmail\\.com$",
@@ -66,13 +67,13 @@ public class LoginView extends StackPane {
     private final Label lblEmailError = new Label("");
     private final Label lblRegisterPasswordError = new Label("");
 
-    private final RadioButton rbMale = new RadioButton("male");
-    private final RadioButton rbFemale = new RadioButton("female");
+    private final RadioButton rbMale = new RadioButton(lang.getString("login.male"));
+    private final RadioButton rbFemale = new RadioButton(lang.getString("login.female"));
 
-    private final Button btnOpenRegister = new Button("Register");
-    private final Button btnLogin = new Button("Login");
-    private final Button btnBack = new Button("Back");
-    private final Button btnCreate = new Button("Create");
+    private final Button btnOpenRegister = new Button(lang.getString("login.Register"));
+    private final Button btnLogin = new Button(lang.getString("login.login"));
+    private final Button btnBack = new Button(lang.getString("login.back"));
+    private final Button btnCreate = new Button(lang.getString("login.create"));
 
     public LoginView() {
         getStyleClass().add("auth-root");
@@ -163,6 +164,7 @@ public class LoginView extends StackPane {
     }
 
     private Node buildLoginContent() {
+        LanguageManager lang = LanguageManager.getInstance();
         HBox wrapper = new HBox(90);
         wrapper.setAlignment(Pos.CENTER);
         wrapper.getStyleClass().add("page-wrapper");
@@ -171,7 +173,7 @@ public class LoginView extends StackPane {
         brandBox.setAlignment(Pos.CENTER);
         brandBox.getStyleClass().add("brand-box");
 
-        Label slogan = new Label("Find numbers from 1 to 100");
+        Label slogan = new Label(lang.getString("login.find.number"));
         slogan.getStyleClass().add("brand-text");
 
         brandBox.getChildren().addAll(createBrandIcon(), slogan);
@@ -183,7 +185,7 @@ public class LoginView extends StackPane {
         card.setSpacing(10);
         card.getStyleClass().addAll("form-card", "login-card");
 
-        Label title = new Label("LOGIN");
+        Label title = new Label(lang.getString("login.login"));
         title.getStyleClass().add("form-title");
 
         btnOpenRegister.getStyleClass().add("action-button");
@@ -197,10 +199,10 @@ public class LoginView extends StackPane {
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
         HBox header = new HBox();
-        Label label = new Label("Password");
+        Label label = new Label(lang.getString("login.password"));
         label.getStyleClass().add("form-label");
 
-        Button forgotBtn = new Button("Forgot Password?");
+        Button forgotBtn = new Button(lang.getString("login.forgot.password"));
         forgotBtn.getStyleClass().add("link-button");
         forgotBtn.setOnAction(e -> openResetDialog());
         forgotBtn.setFocusTraversable(false);
@@ -216,7 +218,7 @@ public class LoginView extends StackPane {
 
         card.getChildren().addAll(
                 title,
-                createFieldBox("Username", txtUsername, lblUsernameError),
+                createFieldBox(lang.getString("login.username"), txtUsername, lblUsernameError),
                 passwordBox,
                 spacer,
                 buttonRow);
@@ -233,7 +235,7 @@ public class LoginView extends StackPane {
         card.setAlignment(Pos.TOP_CENTER);
         card.getStyleClass().addAll("form-card", "register-card");
 
-        Label title = new Label("REGISTER");
+        Label title = new Label(lang.getString("login.Register"));
         title.getStyleClass().add("form-title");
 
         ToggleGroup genderGroup = new ToggleGroup();
@@ -263,10 +265,10 @@ public class LoginView extends StackPane {
 
         grid.getColumnConstraints().addAll(col1, col2);
 
-        grid.add(createFieldBox("Fullname", txtFullName, lblFullNameError), 0, 0);
-        grid.add(createFieldBox("Birth day", dpBirthDay, lblBirthDayError), 1, 0);
-        grid.add(createFieldBox("Email", txtEmail, lblEmailError), 0, 1);
-        grid.add(createFieldBox("Password", txtRegisterPassword, lblRegisterPasswordError), 1, 1);
+        grid.add(createFieldBox(lang.getString("login.fullname"), txtFullName, lblFullNameError), 0, 0);
+        grid.add(createFieldBox(lang.getString("login.birthday"), dpBirthDay, lblBirthDayError), 1, 0);
+        grid.add(createFieldBox(lang.getString("login.email"), txtEmail, lblEmailError), 0, 1);
+        grid.add(createFieldBox(lang.getString("login.password"), txtRegisterPassword, lblRegisterPasswordError), 1, 1);
         grid.add(genderRow, 0, 2);
         grid.add(actionRow, 1, 2);
 
@@ -315,21 +317,22 @@ public class LoginView extends StackPane {
         String password = safeTrim(txtPassword.getText());
 
         if (username.isEmpty()) {
-            showFieldError(txtUsername, lblUsernameError, "Please enter username");
+            showFieldError(txtUsername, lblUsernameError, lang.getString("login.enter.username"));
             return;
         } else if (password.isEmpty()) {
-            showFieldError(txtPassword, lblPasswordError, "Please enter password");
+            showFieldError(txtPassword, lblPasswordError, lang.getString("login.enter.password"));
             return;
         } else {
             AuthClient authClient = new AuthClient();
             User user = authClient.login(username, password);
             if (user != null) {
-                System.out.println("Login successful! Welcome, " + user.getFullName());
+                System.out.println(lang.getString("login.successful") + " " + user.getFullName());
                 handleAfterLogin(user);
                 PlayerSession.setCurrentUser(user);
             } else {
                 showFieldError(txtPassword, lblPasswordError,
-                        authClient.getLastError() == null ? "Invalid username or password" : authClient.getLastError());
+                        authClient.getLastError() == null ? lang.getString("login.invalid")
+                                : authClient.getLastError());
                 return;
             }
         }
@@ -367,37 +370,37 @@ public class LoginView extends StackPane {
         String password = safeTrim(txtRegisterPassword.getText());
 
         if (fullName.isEmpty()) {
-            showFieldError(txtFullName, lblFullNameError, "Please enter full name");
+            showFieldError(txtFullName, lblFullNameError, lang.getString("login.enter.fullname"));
             return;
         }
 
         if (!FULLNAME_PATTERN.matcher(fullName).matches()) {
-            showFieldError(txtFullName, lblFullNameError, "Full name must contain letters only");
+            showFieldError(txtFullName, lblFullNameError, lang.getString("login.fullname.onlly.char"));
             return;
         }
 
         if (birthDay == null) {
-            showFieldError(dpBirthDay, lblBirthDayError, "Please choose birth day");
+            showFieldError(dpBirthDay, lblBirthDayError, lang.getString("login.choose.birthday"));
             return;
         }
 
         if (birthDay.isAfter(LocalDate.now())) {
-            showFieldError(dpBirthDay, lblBirthDayError, "Birth day cannot be in the future");
+            showFieldError(dpBirthDay, lblBirthDayError, lang.getString("login.choose.birthday.if"));
             return;
         }
 
         if (email.isEmpty()) {
-            showFieldError(txtEmail, lblEmailError, "Please enter email");
+            showFieldError(txtEmail, lblEmailError, lang.getString("login.enter.email"));
             return;
         }
 
         if (!GMAIL_PATTERN.matcher(email).matches()) {
-            showFieldError(txtEmail, lblEmailError, "Email must end with @gmail.com && start with letter");
+            showFieldError(txtEmail, lblEmailError, lang.getString("login.email.if"));
             return;
         }
 
         if (password.isEmpty()) {
-            showFieldError(txtRegisterPassword, lblRegisterPasswordError, "Please enter password");
+            showFieldError(txtRegisterPassword, lblRegisterPasswordError, lang.getString("login.enter.password"));
             return;
         }
 
@@ -405,7 +408,7 @@ public class LoginView extends StackPane {
             showFieldError(
                     txtRegisterPassword,
                     lblRegisterPasswordError,
-                    "Min 8 chars, include letter, number, special char");
+                    lang.getString("login.password.if"));
             return;
         }
 
@@ -414,13 +417,13 @@ public class LoginView extends StackPane {
         newUser.setUsername(email);
         newUser.setPassword(password);
         newUser.setFullname(fullName);
-        newUser.setGender(rbMale.isSelected() ? "Male" : "Female");
+        newUser.setGender(rbMale.isSelected() ? lang.getString("login.male") : lang.getString("login.female"));
         newUser.setDob(java.sql.Date.valueOf(birthDay));
 
         AuthClient authClient = new AuthClient();
         if (!authClient.register(newUser)) {
             showFieldError(txtEmail, lblEmailError,
-                    authClient.getLastError() == null ? "Registration failed. Try a different email."
+                    authClient.getLastError() == null ? lang.getString("login.register.fail")
                             : authClient.getLastError());
             return;
         }
@@ -432,31 +435,31 @@ public class LoginView extends StackPane {
 
     private void openResetDialog() {
         Stage stage = new Stage();
-        stage.setTitle("Reset Password");
+        stage.setTitle(lang.getString("login.reset.password"));
 
         VBox root = new VBox();
         root.getStyleClass().add("reset-popup-container");
         root.setPrefWidth(320);
 
-        Label titleLabel = new Label("Secure Password Reset");
+        Label titleLabel = new Label(lang.getString("login.secure.password.reset"));
         titleLabel.getStyleClass().add("reset-header-text");
 
         TextField txtEmail = new TextField();
-        txtEmail.setPromptText("Enter your account email");
+        txtEmail.setPromptText(lang.getString("login.enter.email"));
         txtEmail.getStyleClass().add("reset-input-field");
 
         PasswordField txtNewPass = new PasswordField();
-        txtNewPass.setPromptText("New password");
+        txtNewPass.setPromptText(lang.getString("login.new.password"));
         txtNewPass.getStyleClass().add("reset-input-field");
 
         PasswordField txtConfirm = new PasswordField();
-        txtConfirm.setPromptText("Confirm new password");
+        txtConfirm.setPromptText(lang.getString("login.confirm.password"));
         txtConfirm.getStyleClass().add("reset-input-field");
 
         Label lblError = new Label();
         lblError.getStyleClass().add("reset-error-message");
 
-        Button btnReset = new Button("UPDATE PASSWORD");
+        Button btnReset = new Button(lang.getString("login.update.password"));
         btnReset.getStyleClass().add("reset-submit-button");
         btnReset.setMaxWidth(Double.MAX_VALUE);
 
@@ -467,31 +470,32 @@ public class LoginView extends StackPane {
             AuthClient authClient = new AuthClient();
 
             if (email.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
-                lblError.setText("Error: All fields are required.");
+                lblError.setText(lang.getString("login.err.field"));
                 return;
             }
             if (!pass.equals(confirm)) {
-                lblError.setText("Error: Passwords do not match.");
+                lblError.setText(lang.getString("login.err.password.match"));
                 return;
             }
             if (!STRONG_PASSWORD_PATTERN.matcher(pass).matches()) {
-                lblError.setText("Password must be at least 8 chars, include letter, number, special char");
+                lblError.setText(lang.getString("login.password.if"));
                 return;
             }
             if (!authClient.resetPassword(email, pass)) {
-                lblError.setText(authClient.getLastError() == null ? "Reset failed." : authClient.getLastError());
+                lblError.setText(authClient.getLastError() == null ? lang.getString("login.reset.fail")
+                        : authClient.getLastError());
                 return;
             }
 
-            showSuccess("Success! Your password has been changed.");
+            showSuccess(lang.getString("login.reset.success"));
             stage.close();
         });
 
         root.getChildren().addAll(
                 titleLabel,
-                new Label("Registered Email"), txtEmail,
-                new Label("New Password"), txtNewPass,
-                new Label("Confirm Password"), txtConfirm,
+                new Label(lang.getString("login.register.email")), txtEmail,
+                new Label(lang.getString("login.new.password")), txtNewPass,
+                new Label(lang.getString("login.confirm.password")), txtConfirm,
                 lblError,
                 btnReset);
 
@@ -550,9 +554,9 @@ public class LoginView extends StackPane {
     private void showSuccessDialog() {
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                 javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Success");
+        alert.setTitle(lang.getString("login.succ"));
         alert.setHeaderText(null);
-        alert.setContentText("Registration successful! You can now log in.");
+        alert.setContentText(lang.getString("login.register.success"));
         alert.showAndWait();
     }
 

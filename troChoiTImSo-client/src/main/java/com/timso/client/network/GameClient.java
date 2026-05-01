@@ -11,6 +11,8 @@ import java.util.Base64;
 import java.util.List;
 
 import com.timso.client.controller.*;
+import com.timso.client.view.GameView;
+import com.timso.client.view.PlayerSession;
 
 public class GameClient {
     private static GameClient instance;
@@ -238,6 +240,50 @@ public class GameClient {
             case "VIDEO_REWARD_FAIL":
                 listener.onVideoRewardFail(parts[1]);
                 break;
+
+            case "BUY_SKILL_SUCCESS":
+                if (parts.length >= 4) {
+                    String skillType = parts[1];
+                    int newCount = Integer.parseInt(parts[2]);
+                    int newGold = Integer.parseInt(parts[3]);
+                    listener.onBuySkillSuccess(skillType, newCount, newGold);
+                }
+                break;
+
+            case "SKILL_DATA":
+                if (parts.length >= 4) {
+                    int light = Integer.parseInt(parts[1]);
+                    int dark = Integer.parseInt(parts[2]);
+                    int freeze = Integer.parseInt(parts[3]);
+                    System.out.println(
+                            ">>> Received SKILL_DATA - Light: " + light + ", Dark: " + dark + ", Freeze: " + freeze);
+
+                    PlayerSession.setLightSkill(light);
+                    PlayerSession.setDarkSkill(dark);
+                    PlayerSession.setFreezeSkill(freeze);
+                }
+                break;
+
+            case "SKILL_UPDATE":
+                if (parts.length >= 3) {
+                    String skillType = parts[1];
+                    int newCount = Integer.parseInt(parts[2]);
+                    switch (skillType) {
+                        case "light":
+                            PlayerSession.setLightSkill(newCount);
+                            break;
+                        case "dark":
+                            PlayerSession.setDarkSkill(newCount);
+                            break;
+                        case "freeze":
+                            PlayerSession.setFreezeSkill(newCount);
+                            break;
+                    }
+                    if (listener instanceof GameView) {
+                        ((GameView) listener).refreshSkillPanel();
+                    }
+                }
+                break;
         }
     }
 
@@ -388,6 +434,8 @@ public class GameClient {
         void onVideoRewardSuccess(int rewardAmount, int newGold);
 
         void onVideoRewardFail(String message);
+
+        void onBuySkillSuccess(String skillType, int newCount, int newGold);
     }
 
 }

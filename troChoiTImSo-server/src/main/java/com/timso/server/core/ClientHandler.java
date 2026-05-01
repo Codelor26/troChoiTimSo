@@ -14,6 +14,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientHandler implements Runnable {
@@ -136,34 +137,76 @@ public class ClientHandler implements Runnable {
                 }
                 sendMessage("LEAVE_OK");
             }
-            case "USE_FREEZE_SKILL" -> {
-                if (room != null) {
-                    room.useFreezeSkill(this);
+
+            case "BUY_SKILL" -> {
+                if (tokens.length >= 3) {
+                    String skillType = tokens[1];
+                    int price = Integer.parseInt(tokens[2]);
+
+                    UserDAO userDao = new UserDAO();
+
+                    int currentGold = userDao.getUserGold(username);
+                    if (currentGold >= price) {
+                        boolean goldSuccess = userDao.deductGold(username, price);
+                        if (goldSuccess) {
+                            boolean skillSuccess = userDao.updateSkill(username, skillType, 1);
+                            if (skillSuccess) {
+                                Map<String, Integer> skills = userDao.getUserSkills(username);
+                                int newGold = userDao.getUserGold(username);
+
+                                sendMessage("BUY_SKILL_SUCCESS|" + skillType + "|" +
+                                        skills.get(skillType) + "|" + newGold);
+                            } else {
+                                userDao.addGold(username, price);
+                                sendMessage("BUY_SKILL_FAIL|Lỗi lưu kỹ năng");
+                            }
+                        } else {
+                            sendMessage("BUY_SKILL_FAIL|Không đủ vàng");
+                        }
+                    } else {
+                        sendMessage("BUY_SKILL_FAIL|Không đủ vàng");
+                    }
                 }
                 break;
+            }
+
+            case "USE_LIGHT_SKILL" -> {
+                if (room != null) {
+                    room.useLightSkill(this);
+                }
+                UserDAO userDao = new UserDAO();
+                boolean success = userDao.useSkill(username, "light");
+                if (success) {
+                    sendMessage("SKILL_USED|light");
+                    Map<String, Integer> skills = userDao.getUserSkills(username);
+                    sendMessage("SKILL_UPDATE|light|" + skills.get("light"));
+                }
             }
 
             case "USE_DARK_SKILL" -> {
                 if (room != null) {
                     room.useDarkSkill(this);
                 }
-                break;
+                UserDAO userDao = new UserDAO();
+                boolean success = userDao.useSkill(username, "dark");
+                if (success) {
+                    sendMessage("SKILL_USED|dark");
+                    Map<String, Integer> skills = userDao.getUserSkills(username);
+                    sendMessage("SKILL_UPDATE|dark|" + skills.get("dark"));
+                }
             }
 
-            case "BUY_SKILL" -> {
-                if (tokens.length >= 3) {
-                    String skillType = tokens[1];
-                    int price = Integer.parseInt(tokens[2]);
-                    // Cập nhật database, trừ vàng
-                    UserDAO userDao = new UserDAO();
-                    boolean success = userDao.deductGold(username, price);
-                    if (success) {
-                        sendMessage("BUY_SKILL_SUCCESS|" + skillType);
-                    } else {
-                        sendMessage("BUY_SKILL_FAIL|Không đủ vàng");
-                    }
+            case "USE_FREEZE_SKILL" -> {
+                if (room != null) {
+                    room.useFreezeSkill(this);
                 }
-                break;
+                UserDAO userDao = new UserDAO();
+                boolean success = userDao.useSkill(username, "freeze");
+                if (success) {
+                    sendMessage("SKILL_USED|freeze");
+                    Map<String, Integer> skills = userDao.getUserSkills(username);
+                    sendMessage("SKILL_UPDATE|freeze|" + skills.get("freeze"));
+                }
             }
 
             case "CLAIM_VIDEO_REWARD" -> {
@@ -196,6 +239,13 @@ public class ClientHandler implements Runnable {
             this.playerName = user.getPlayerName();
             this.playerAvatar = user.getAvatar();
             System.out.println("Player registered for game: " + username + ", PlayerName: " + this.playerName);
+            Map<String, Integer> skills = userDao.getUserSkills(username);
+            String skillData = "SKILL_DATA|" +
+                    skills.get("light") + "|" +
+                    skills.get("dark") + "|" +
+                    skills.get("freeze");
+            sendMessage(skillData);
+            System.out.println("Sent SKILL_DATA to client: " + skillData);
         } else {
             System.out.println("Player registered for game: " + username + " (not found in DB)");
             this.playerName = username;
