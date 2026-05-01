@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.timso.common.model.User;
 import com.timso.server.config.ServerConfig;
+import com.timso.server.dao.StatsDAO;
 import com.timso.server.dao.UserDAO;
 
 public class Room implements Runnable {
@@ -295,16 +297,24 @@ public class Room implements Runnable {
         String winner;
         int winnerGold = config.getWinGoldReward();
 
+        StatsDAO statsDAO = new StatsDAO();
+
         if (p1Score > p2Score) {
             winner = p1Name;
             addGoldToPlayer(player1, winnerGold);
+            statsDAO.updateGameStats(getUserId(player1), true, false, p1Score);
+            statsDAO.updateGameStats(getUserId(player2), false, false, p2Score);
 
         } else if (p2Score > p1Score) {
             winner = p2Name;
             addGoldToPlayer(player2, winnerGold);
+            statsDAO.updateGameStats(getUserId(player1), false, false, p1Score);
+            statsDAO.updateGameStats(getUserId(player2), true, false, p2Score);
 
         } else {
             winner = "DRAW";
+            statsDAO.updateGameStats(getUserId(player1), false, true, p1Score);
+            statsDAO.updateGameStats(getUserId(player2), false, true, p2Score);
         }
 
         String resultForP1 = "GAME_OVER|" + encode(winner) + "|" + p1Score + "|" + p2Score;
@@ -327,6 +337,14 @@ public class Room implements Runnable {
 
         System.out.println("Game ended - " + p1Name + ": " + p1Score + " vs " + p2Name + ": " + p2Score);
         System.out.println("Winner: " + winner + " (+" + winnerGold + " gold)");
+    }
+
+    private int getUserId(ClientHandler player) {
+        if (player == null)
+            return -1;
+        UserDAO userDao = new UserDAO();
+        User user = userDao.getUserByUsername(player.getUsername());
+        return user != null ? user.getID() : -1;
     }
 
     private void addGoldToPlayer(ClientHandler player, int goldAmount) {

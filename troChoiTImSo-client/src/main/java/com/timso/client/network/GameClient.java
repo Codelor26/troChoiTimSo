@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.timso.client.controller.*;
 import com.timso.client.view.GameView;
+import com.timso.client.view.LeaderboardView;
 import com.timso.client.view.PlayerSession;
 
 import javafx.application.Platform;
@@ -291,6 +292,62 @@ public class GameClient {
                     });
                 }
                 break;
+
+            case "LEADERBOARD":
+                if (parts.length >= 2) {
+                    String data = parts[1];
+                    listener.onLeaderboard(data);
+                }
+                break;
+
+            case "MY_RANK":
+                if (parts.length >= 2) {
+                    int rank = Integer.parseInt(parts[1]);
+                    listener.onMyRank(rank);
+                }
+                break;
+
+            case "LEADERBOARD_COUNT":
+                // Bắt đầu nhận leaderboard
+                break;
+
+            case "LEADERBOARD_PLAYER":
+                if (parts.length >= 9) {
+                    try {
+                        String playerName1 = decode(parts[1]);
+                        String avatar = decode(parts[2]);
+                        int totalGames = Integer.parseInt(parts[3]);
+                        int wins = Integer.parseInt(parts[4]);
+                        int losses = Integer.parseInt(parts[5]);
+                        int draws = Integer.parseInt(parts[6]);
+                        int totalPoints = Integer.parseInt(parts[7]);
+                        double winRate = Double.parseDouble(parts[8]);
+
+                        System.out.println(">>> LEADERBOARD_PLAYER: " + playerName1 + " - Points: " + totalPoints);
+
+                        if (listener instanceof LeaderboardView) {
+                            ((LeaderboardView) listener).addLeaderboardPlayer(playerName1, avatar, totalGames, wins,
+                                    losses, draws, totalPoints, winRate);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error parsing LEADERBOARD_PLAYER: " + e.getMessage());
+                    }
+                }
+                break;
+
+            case "LEADERBOARD_END":
+                System.out.println(">>> LEADERBOARD_END received");
+                if (listener instanceof LeaderboardView) {
+                    ((LeaderboardView) listener).finishLeaderboard();
+                }
+                break;
+
+            case "LEADERBOARD_EMPTY":
+                System.out.println(">>> LEADERBOARD_EMPTY received");
+                if (listener instanceof LeaderboardView) {
+                    ((LeaderboardView) listener).onLeaderboardEmpty();
+                }
+                break;
         }
     }
 
@@ -443,6 +500,10 @@ public class GameClient {
         void onVideoRewardFail(String message);
 
         void onBuySkillSuccess(String skillType, int newCount, int newGold);
+
+        void onLeaderboard(String data);
+
+        void onMyRank(int rank);
     }
 
 }

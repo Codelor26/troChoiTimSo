@@ -239,6 +239,14 @@ public class HomeView extends StackPane {
             @Override
             public void onBuySkillSuccess(String skillType, int newCount, int newGold) {
             }
+
+            @Override
+            public void onLeaderboard(String data) {
+            }
+
+            @Override
+            public void onMyRank(int rank) {
+            }
         });
 
         SoundManager.playBackgroundMusic();
@@ -447,6 +455,13 @@ public class HomeView extends StackPane {
                 }
             }
         });
+        Button btnLeaderboard = createFooterIconButton("/icon/leaderboard.png");
+        btnLeaderboard.setOnAction(e -> {
+            if (getScene() != null) {
+                getScene().setRoot(new LeaderboardView(playerName, avatarPath));
+            }
+        });
+        footer.getChildren().add(btnLeaderboard);
 
         footer.getChildren().addAll(btnSetting, btnInstruction, btnSkill);
         return footer;

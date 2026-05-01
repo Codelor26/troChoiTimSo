@@ -39,6 +39,7 @@ public class PlayerSession {
 
     public static User getCurrentUser() {
         return currentUser;
+
     }
 
     public static int getGold() {

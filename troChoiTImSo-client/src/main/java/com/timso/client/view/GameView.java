@@ -1252,6 +1252,14 @@ public class GameView extends StackPane implements GameClient.GameListener {
         });
     }
 
+    @Override
+    public void onLeaderboard(String data) {
+    }
+
+    @Override
+    public void onMyRank(int rank) {
+    }
+
     public void showOverlay() {
         setVisible(true);
         setManaged(true);

@@ -485,4 +485,14 @@ public class Skill extends StackPane implements GameClient.GameListener {
     public void onUnblockNumbers() {
     }
 
+    @Override
+    public void onLeaderboard(String data) {
+        // Không cần xử lý ở Skill
+    }
+
+    @Override
+    public void onMyRank(int rank) {
+        // Không cần xử lý ở Skill
+    }
+
 }

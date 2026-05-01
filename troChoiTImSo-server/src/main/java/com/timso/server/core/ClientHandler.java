@@ -1,6 +1,7 @@
 package com.timso.server.core;
 
 import com.timso.common.model.User;
+import com.timso.server.dao.StatsDAO;
 import com.timso.server.dao.UserDAO;
 
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -223,8 +225,58 @@ public class ClientHandler implements Runnable {
                 }
             }
 
+            case "GET_LEADERBOARD" -> {
+                System.out.println("Received GET_LEADERBOARD from client");
+
+                StatsDAO statsDAO = new StatsDAO();
+                List<Map<String, Object>> leaderboard = statsDAO.getLeaderboard();
+                System.out.println("Leaderboard size: " + leaderboard.size());
+
+                sendLeaderboard(leaderboard);
+            }
+
+            case "GET_MY_RANK" -> {
+                if (username != null) {
+                    UserDAO userDao = new UserDAO();
+                    User user = userDao.getUserByUsername(username);
+                    if (user != null) {
+                        StatsDAO statsDAO = new StatsDAO();
+                        int rank = statsDAO.getUserRank(user.getID());
+                        sendMessage("MY_RANK|" + rank);
+                    }
+                }
+            }
+
             default -> sendError("Lệnh không hỗ trợ: " + command);
         }
+    }
+
+    private void sendLeaderboard(List<Map<String, Object>> leaderboard) {
+        if (leaderboard == null || leaderboard.isEmpty()) {
+            sendMessage("LEADERBOARD_EMPTY");
+            System.out.println("Sent empty leaderboard");
+            return;
+        }
+
+        sendMessage("LEADERBOARD_COUNT|" + leaderboard.size());
+
+        for (Map<String, Object> player : leaderboard) {
+            String playerName = String.valueOf(player.get("playerName"));
+            String avatar = String.valueOf(player.get("avatar"));
+            String msg = "LEADERBOARD_PLAYER|"
+                    + encode(playerName) + "|"
+                    + encode(avatar) + "|"
+                    + player.get("totalGames") + "|"
+                    + player.get("wins") + "|"
+                    + player.get("losses") + "|"
+                    + player.get("draws") + "|"
+                    + player.get("totalPoints") + "|"
+                    + player.get("winRate");
+            sendMessage(msg);
+            System.out.println("Sent player: " + playerName);
+        }
+
+        sendMessage("LEADERBOARD_END");
     }
 
     private void handlePlayerInfo(String[] tokens) {

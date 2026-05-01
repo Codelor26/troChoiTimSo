@@ -1072,3 +1072,68 @@
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(255, 99, 71, 0.8), 15, 0, 0, 0);
 }
+
+.leaderboard-title {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.leaderboard-my-rank {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
+    -fx-background-radius: 15;
+    -fx-padding: 15;
+    -fx-border-color: #ff6b6b;
+    -fx-border-radius: 15;
+}
+
+.leaderboard-header {
+    -fx-background-color: #0f3460;
+    -fx-background-radius: 10;
+}
+
+.leaderboard-header-text {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.leaderboard-row {
+    -fx-background-color: rgb(11, 4, 4);
+    -fx-background-radius: 8;
+    -fx-text-fill: white;
+}
+
+.leaderboard-my-rank-title {
+    -fx-text-fill: white;
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+}
+
+.leaderboard-row:hover {
+    -fx-background-color: #f86510;
+}
+
+.leaderboard-player-name {
+    -fx-text-fill: white;
+}
+
+.leaderboard-scroll {
+    -fx-background-color: transparent;
+}
+
+.leaderboard-scroll .scroll-bar:vertical {
+    -fx-background-color: #0f3460;
+}
+
+.rank-text {
+    -fx-font-weight: normal;
+    -fx-text-fill: #ffffff;
+}
+
+
+.leaderboard-row .rank-text {
+    -fx-text-fill: #aaaaaa;
+}
+
+.leaderboard-row:even .rank-text {
+    -fx-text-fill: #cccccc;
+}
